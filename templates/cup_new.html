@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h4>Panel tworzenia rozgrywek</h4>
+
+<form action="" method="post">
+    <div class="row">
+      <p class="col-6">
+        {{ cup_form.name|as_crispy_field }}
+      </p>
+        <p class="col-6">
+        {{ cup_form.type|as_crispy_field }}
+      </p>
+        </p>
+        <p class="col-6">
+        {{ cup_form.choosing_teams|as_crispy_field }}
+      </p>
+    </div>
+    {% csrf_token %}
+    <center><p><button type="submit" class="btn btn-secondary">Utwórz</button></p></center>
+</form>
+{% endblock %}

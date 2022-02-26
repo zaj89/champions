@@ -1,0 +1,31 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h4>Listra graczy rozgrywek: {{ cup.name }}</h4>
+<p><a href="" class="btn btn-secondary">Dodaj gracza</a> </p>
+{% if players %}
+        <table class="table table-striped table-dark">
+        <thead>
+        <tr>
+          <th scope="col">Nazwa</th>
+          <th scope="col">Liczba graczy</th>
+          <th scope="col" colspan="2">Akcja</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for player in players %}
+        <tr>
+            <th scope="row"><span class="btn btn-secondary">{{ player.name }}</span></th>
+          <td><a type="submit" class="btn btn-secondary">Zarządzaj</a> <a type="submit" class="btn btn-secondary">Lista graczy</a> <a type="submit" class="btn btn-secondary" href="{% url 'delete' cup.id %}">Skasuj</a></td>
+        </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+
+{% else %}
+<hr>
+<p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
+{% endif %}
+{% endblock %}

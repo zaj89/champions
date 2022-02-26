@@ -1,0 +1,21 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h4>Rozgrywki: "{{ cup.name }}"</h4>
+<hr>
+<br>
+<form action="" method="post">
+    <div class="row">
+      <p class="col-6">
+        <center>{{ match.player1 }}: {{ match_form.result1|as_crispy_field }}</center>
+      </p>
+        <p class="col-6">
+        <center>{{ match.player2 }}: {{ match_form.result2|as_crispy_field }}</center>
+      </p>
+    </div>
+    {% csrf_token %}
+    <center><p><button type="submit" class="btn btn-secondary">Wprowadź</button></p></center>
+</form>
+{% endblock %}
