@@ -4,17 +4,24 @@
 {% block content %}
 
 <h4>Rozgrywki: {{ cup.name }}</h4>
-<h5>Rodzaj: {{ cup.type }}</h5>
-<h5>Aktualny etap: {% if cup.actual_round == None %}
-                        Nie rozpoczęte
-                   {% else %}
-                        {% if cup.finished %}
-                            Zakończony
-                        {% else %}
-                            {{ cup.actual_round }}
-                        {% endif %}
-                   {% endif %}
-</h5>
+<h5>Rodzaj: {% if cup.type == "Puchar" %}Puchar
+            {% elif cup.type == "1 mecz" %}Liga (1 mecz)
+            {% elif cup.type == "2 mecze" %}Liga (2 mecze)
+            {% endif %}</h5>
+{% if cup.type == 'Puchar' %}
+    <h5>Aktualny etap:
+                        {% if cup.actual_round == None %}
+                            Nie rozpoczęte
+                       {% else %}
+                            {% if cup.finished %}
+                                Zakończony
+                            {% else %}
+                                {{ cup.actual_round }}
+                            {% endif %}
+                          {% endif %}
+
+    </h5>
+{% endif %}
 <hr>
 <br>
 {% if cup.registration == 'Zamknięta' %}
@@ -38,7 +45,7 @@
     {% if not cup.actual_round.name == "Finał" and cup.type == 'Puchar' %}
         <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj etap</a></p>
     {% endif %}
-    {% if cup.type == 'Liga' %}
+    {% if cup.type == '1 mecz'  or cup.type == '2 mecze' %}
         <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj rozgrywki</a></p>
     {% endif %}
 {% else %}
@@ -48,12 +55,54 @@
 {% endif %}
 
 <br>
-
+{% if cup.league_generated and cup.type == "1 mecz" or cup.type == "2 mecze" %}
+<h4>Tabela ligowa</h4>
+        <table class="table table-striped table-dark">
+        <thead>
+        <tr>
+          <th width="5%" scope="col">Miejsce</th>
+          <th scope="col">Gracz</th>
+            {% if cup.choosing_teams == True %}
+          <th scope="col">Drużyna</th>
+            {% endif %}
+          <th width="5%" scope="col">Z</th>
+          <th width="5%" scope="col">R</th>
+          <th width="5%" scope="col">P</th>
+          <th width="5%" scope="col">BZ</th>
+          <th width="5%" scope="col">BS</th>
+          <th width="5%" scope="col">BB</th>
+          <th width="5%" scope="col">PKT</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for player in players %}
+        <tr>
+            <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
+          <td><span class="btn btn-secondary">{{ player.name }}</span></td>
+            {% if cup.choosing_teams == True %}
+                <th scope="row"><span class="btn btn-secondary">{{ player.team }}</span></th>
+            {% endif %}
+            <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
+               </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+<br>
+{% endif %}
 {% for round in rounds %}
 <h4>{{ round.name }}</h4>
 <hr>
 <br>
-
+{% if round.pausing %}
+<p>Pauzuje: {{ round.pausing.name }}</p>
+<br>
+{% endif %}
 <table class="table table-striped table-dark">
         <thead>
         <tr>
@@ -76,10 +125,14 @@
                     {% if match.finished == False %}
                            <a class="btn btn-secondary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
                     {% else %}
-                        {% if cup.actual_round.id == round.id %}
-                            {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
-                                <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                        {% if cup.type == "Puchar" %}
+                            {% if cup.actual_round.id == round.id %}
+                                {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
+                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                {% endif %}
                             {% endif %}
+                        {% elif cup.type == "1 mecz" %}
+                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
                         {% endif %}
                     {% endif %}
           </td>

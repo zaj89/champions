@@ -21,6 +21,10 @@ class Player(models.Model):
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup', default='')
     team = models.CharField(max_length=30, blank=True, verbose_name='Drużyna', default='', null=True)
 
+    def clean(self):
+        if len(str(self.name)) > 30:
+            raise ValidationError("Maksymalna długość nazwy gracza to 30 znaków.")
+
     def __str__(self):
         return self.name
 
@@ -33,18 +37,18 @@ class Match(models.Model):
 
     player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player1', verbose_name='Gracz 1')
     player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player2', verbose_name='Gracz 2')
-    result1 = models.PositiveSmallIntegerField(verbose_name='Wynik 1', default=None, null=True)
-    result2 = models.PositiveSmallIntegerField(verbose_name='Wynik 2', default=None, null=True)
+    result1 = models.PositiveSmallIntegerField(verbose_name='Wynik gospodarza', default=None, null=True)
+    result2 = models.PositiveSmallIntegerField(verbose_name='Wynik gościa', default=None, null=True)
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_in_match', default='')
     round = models.ForeignKey('Round', on_delete=models.CASCADE, related_name='round', default='')
     finished = models.BooleanField(verbose_name="Rozegrany", default=False)
 
+    def clean(self):
+        if self.result1 == self.result2 and self.cup.type == 'Puchar':
+            raise ValidationError("Mecz nie może zakończyć się remisem.")
+
     def __str__(self):
         return str(self.player1) + " vs " + str(self.player2)
-
-    def clean(self):
-        if self.result1 == self.result2:
-            raise ValidationError("Mecz nie może zakończyć się remisem.")
 
 
 # This is a class that defines a Cup object
@@ -52,20 +56,21 @@ class Cup(models.Model):
     class Meta:
         verbose_name = _("Puchar")
         verbose_name_plural = _("Puchary")
+
     name = models.CharField(max_length=50, blank=False, verbose_name='Nazwa', default='')
     number_of_players = models.PositiveSmallIntegerField(verbose_name='Liczba graczy', default=0,
                                                          validators=[MinValueValidator(4),
                                                                      MaxValueValidator(128)])
-# do rozbudowania
+    # do rozbudowania
     types = (
         ('Puchar', (
             ('Puchar', 'Puchar'),
-#            ('Grupy + Puchar', 'Grupy + Puchar'),
+            #            ('Grupy + Puchar', 'Grupy + Puchar'),
         )),
-#        ('Liga', (
-#            ('1 mecz', '1 mecz'),
-#            ('2 mecze', '2 mecze'),
-#        )),
+        ('Liga', (
+            ('1 mecz', '1 mecz'),
+            ('2 mecze', '2 mecze'),
+        )),
     )
     type = models.CharField(max_length=20, choices=types, default=types[0][0],
                             verbose_name='Rodzaj')
@@ -78,9 +83,16 @@ class Cup(models.Model):
     len_rounds = models.PositiveSmallIntegerField(verbose_name='Liczba rund', default=0)
     elimination_matches = models.PositiveSmallIntegerField(verbose_name='Liczba meczy eliminacyjnych', default=0)
     elimination_generated = models.BooleanField(verbose_name='Wygenerowano emilimacje', default=False)
-    actual_round = models.ForeignKey('Round', on_delete=models.CASCADE, related_name='actual_round', default=None, null=True)
+    league_generated = models.BooleanField(verbose_name='Wygenerowano ligę', default=False)
+    actual_round = models.ForeignKey('Round', on_delete=models.CASCADE, related_name='actual_round', default=None,
+                                     null=True)
     finished = models.BooleanField(verbose_name='Zakończono rozgrywki', default=False)
     choosing_teams = models.BooleanField(verbose_name='Wybór drużyn', default=False)
+    players_order = models.CharField(max_length=50, blank=False, verbose_name='Kolejność Graczy', default='')
+
+    def clean(self):
+        if len(str(self.name)) > 50:
+            raise ValidationError("Maksymalna długość nazwy turnieju to 50 znaków.")
 
     def __str__(self):
         return self.name
@@ -96,6 +108,8 @@ class Round(models.Model):
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_in_round', default='')
     promotion = models.ManyToManyField(Player, related_name='promotion_round', verbose_name='Awans', blank=True)
     players = models.ManyToManyField(Player, related_name='players', verbose_name='Uczestnicy', blank=True)
+    pausing = models.ForeignKey(Player, on_delete=models.CASCADE, verbose_name='Pauzuje', null=True)
+    match = models.PositiveSmallIntegerField(verbose_name='Runda meczy', null=True)
 
     def __str__(self):
         return self.name

@@ -8,6 +8,10 @@ class CupForm(forms.ModelForm):
         model = Cup
         fields = ('name', 'type', 'choosing_teams')
 
+    def clean_cup(self):
+        if len(str(self.cleaned_data['name'])) > 50:
+            raise forms.ValidationError("Maksymalna długość nazwy turnieju to 50 znaków.")
+
 
 # This class is a ModelForm that is used to create a new PlayerWithTeam object.
 class PlayerWithTeamForm(forms.ModelForm):
@@ -22,9 +26,24 @@ class PlayerForm(forms.ModelForm):
         model = Player
         fields = ('name',)
 
+    def clean_player(self):
+        if len(str(self.cleaned_data['name'])) > 30:
+            raise forms.ValidationError("Maksymalna długość nazwy gracza to 30 znaków.")
+
 
 # This is the form that will be used to enter the match result.
-class MatchForm(forms.ModelForm):
+class MatchCupForm(forms.ModelForm):
+    class Meta:
+        model = Match
+        fields = ('result1', 'result2')
+
+    def clean_match(self):
+        if self.cleaned_data['result1'] == self.cleaned_data['result2']:
+            raise forms.ValidationError("Mecz nie może zakończyć się remisem.")
+
+
+# This is the form that will be used to enter the match result.
+class MatchLeagueForm(forms.ModelForm):
     class Meta:
         model = Match
         fields = ('result1', 'result2')
