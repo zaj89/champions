@@ -21,23 +21,30 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-<!--                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>-->
-<!--                        <li class="nav-item"><a class="nav-link" href="#">Zaloguj</a></li>-->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Champions</a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="{% url 'cup_new' %}">Utwórz</a></li>
-                                <li><a class="dropdown-item" href="{% url 'cups_list' %}">Lista</a></li>
-                                    {% if last_cup %}
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                        <a class="dropdown-item" href="{% url 'dashboard' last_cup.id %}">Kontynuuj</a>
-                                    {% endif %}
-
-                                </li>
-                            </ul>
+                <div class="btn-group" style="margin:5px">
+                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Champions
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'cup_new' %}">Utwórz</a></li>
+                    <li><a class="dropdown-item" href="{% url 'cups_list' %}">Lista</a></li>
+                    {% if last_cup %}
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                                <a class="dropdown-item" href="{% url 'dashboard' last_cup.id %}">Kontynuuj</a>
                         </li>
-                    </ul>
+                    {% endif %}
+                  </ul>
+                </div>
+                <div class="btn-group" style="margin:5px">
+                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Użytkownik
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Zaloguj</a></li>
+                    <li><a class="dropdown-item" href="#">Panel</a></li>
+                    <li><a class="dropdown-item" href="#">Wyloguj</a></li>
+                  </ul>
                 </div>
             </div>
         </nav>
@@ -49,6 +56,7 @@
                 {% block content %}
                 <h1>System prowadzenia rozgrywek</h1>
                 <p class="lead">Zaloguj się i przeprowadź zorganizowane rozgrywki ze znajomymi</p>
+                <center><img src="{% static 'images/skills.gif' %}" width="30%"></center>
                 {% endblock %}
             </div>
         </div>
