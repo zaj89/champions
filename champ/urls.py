@@ -19,6 +19,6 @@ from .views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index),
+    path('', index, name='index'),
     path('cup/', include('cup.urls')),
 ]

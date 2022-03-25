@@ -15,7 +15,9 @@ def cups_list(request):
     The view displays a list of cups
     """
     cups = Cup.objects.all()
-    return render(request, 'cups_list.html', {'cups': cups})
+    last_cup = Cup.objects.last()
+    return render(request, 'cups_list.html', {'cups': cups,
+                                              'last_cup': last_cup})
 
 
 def delete(request, cup_id: int):
@@ -47,8 +49,9 @@ def cup_new(request):
             return HttpResponseRedirect('/cup/dashboard/{}/edit_players'.format(new_cup.id))
     else:
         cup_form = CupForm()
+    last_cup = Cup.objects.last()
     return render(request, 'cup_new.html', {'cup_form': cup_form,
-                                            })
+                                            'last_cup': last_cup})
 
 
 def dashboard(request, cup_id: int):
@@ -68,11 +71,13 @@ def dashboard(request, cup_id: int):
             match_not_played = True
     rounds = Round.objects.filter(cup=cup).order_by('match', 'id')
     players = Player.objects.filter(cup=cup).order_by('-points')
+    last_cup = Cup.objects.last()
     return render(request, 'dashboard.html', {'cup': cup,
                                               'matches': matches,
                                               'match_not_played': match_not_played,
                                               'rounds': rounds,
-                                              'players': players})
+                                              'players': players,
+                                              'last_cup': last_cup})
 
 
 def stats(request, cup_id: int):
@@ -92,11 +97,13 @@ def stats(request, cup_id: int):
         else:
             match_not_played = True
     rounds = Round.objects.filter(cup=cup)[::-1]
+    last_cup = Cup.objects.last()
     return render(request, 'stats.html', {'cup': cup,
                                           'matches': matches,
                                           'match_not_played': match_not_played,
                                           'rounds': rounds,
-                                          'players_goals': players_goals})
+                                          'players_goals': players_goals,
+                                          'last_cup': last_cup})
 
 
 def edit_players(request, cup_id: int):
@@ -124,9 +131,11 @@ def edit_players(request, cup_id: int):
             return HttpResponseRedirect('/cup/dashboard/{}/edit_players'.format(cup.id))
     else:
         player_form = PlayerForm()
+    last_cup = Cup.objects.last()
     return render(request, 'edit_players.html', {'cup': cup,
                                                  'players': players,
-                                                 'player_form': player_form})
+                                                 'player_form': player_form,
+                                                 'last_cup': last_cup})
 
 
 def del_players(request, cup_id: int, player_to_del: int):
@@ -154,6 +163,7 @@ def close_registration(request, cup_id: int):
     :return: A rendered template of the dashboard.html page.
     """
     cup = Cup.objects.get(id=cup_id)
+    last_cup = Cup.objects.last()
     if cup.type == 'Puchar':
         players = list(Player.objects.filter(cup=cup))
         if len(players) == 4:
@@ -187,7 +197,8 @@ def close_registration(request, cup_id: int):
         cup.registration = 'Zamknięta'
         cup.save()
         messages.success(request, 'Rejestracja została zamknięta.')
-        return render(request, 'dashboard.html', {'cup': cup})
+        return render(request, 'dashboard.html', {'cup': cup,
+                                                  'last_cup': last_cup})
     elif cup.type == 'Grupy + Puchar':
         pass
     elif cup.type == '1 mecz':
@@ -204,7 +215,8 @@ def close_registration(request, cup_id: int):
             cup.players_order = cup.players_order + "pausing,"
         cup.save()
         messages.success(request, 'Rejestracja została zamknięta.')
-        return render(request, 'dashboard.html', {'cup': cup})
+        return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+
     elif cup.type == '2 mecze':
         players = list(Player.objects.filter(cup=cup))
         shuffle(players)
@@ -497,7 +509,7 @@ def enter_the_result(request, cup_id: int, match_id: int):
     cup = Cup.objects.get(id=cup_id)
     instance = get_object_or_404(Match, id=match_id)
     actual_round = cup.actual_round
-
+    last_cup = Cup.objects.last()
     if request.method == 'POST':
         if cup.type == 'Puchar':
             match_form = MatchCupForm(data=request.POST or None, instance=instance)
@@ -562,7 +574,8 @@ def enter_the_result(request, cup_id: int, match_id: int):
             return render(request, 'enter_the_result.html', {'cup': cup,
                                                              'match': match,
                                                              'match_form': match_form,
-                                                             'match_not_played': match_not_played})
+                                                             'match_not_played': match_not_played,
+                                                             'last_cup': last_cup})
 
     else:
         if cup.type == "Puchar":
@@ -582,7 +595,8 @@ def enter_the_result(request, cup_id: int, match_id: int):
     return render(request, 'enter_the_result.html', {'cup': cup,
                                                      'match': match,
                                                      'match_form': match_form,
-                                                     'match_not_played': match_not_played})
+                                                     'match_not_played': match_not_played,
+                                                     'last_cup': last_cup})
 
 
 def delete_the_result(request, cup_id: int, match_id: int):
