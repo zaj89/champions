@@ -17,6 +17,10 @@
         <p class="col-6">
         {{ cup_form.choosing_teams|as_crispy_field }}
       </p>
+        </p>
+        <p class="col-6">
+        {{ cup_form.declarations|as_crispy_field }}
+      </p>
     </div>
     {% csrf_token %}
     <center><p><button type="submit" class="btn btn-secondary">Utwórz</button></p></center>

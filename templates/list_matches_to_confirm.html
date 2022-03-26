@@ -1,0 +1,51 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h4>Mecze do Potwierdzdenia:</h4>
+<hr>
+<br>
+{% if matches %}
+<table class="table table-striped table-dark">
+        <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">Gospodarz</th>
+          <th scope="col">Rezultat</th>
+          <th scope="col">Gość</th>
+          <th scope="col" colspan="2">Akcja</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for match in matches %}
+        {% if match.player1 == request.user or match.player2 == request.user and not match.finished %}
+        <tr>
+            <th scope="row" width="22.5%"><span></span></th>
+            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+          <td width="15%"><span class="btn btn-secondary">Nie rozegrano</span></td>
+          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+          <td width="45%">
+                    {% if match.finished == False %}
+                           <a class="btn btn-secondary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
+                    {% else %}
+                        {% if cup.type == "Puchar" %}
+                            {% if cup.actual_round.id == round.id %}
+                                {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
+                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                {% endif %}
+                            {% endif %}
+                        {% elif cup.type == "1 mecz" %}
+                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                        {% endif %}
+                    {% endif %}
+          </td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+        </tbody>
+        </table>
+{% else %}
+<h4>Brak</h4>
+{% endif %}
+{% endblock %}

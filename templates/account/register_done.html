@@ -1,0 +1,8 @@
+{% extends 'index.html' %}
+
+{% block title %}Witaj{% endblock %}
+
+{% block content %}
+<h4>Witaj, {{ new_user.first_name }}!</h4>
+<p>Twoje konto zostało utworzone. Możesz się już <a href="{% url 'login' %}" class="btn btn-secondary">Zalogować</a>.</p>
+{% endblock %}

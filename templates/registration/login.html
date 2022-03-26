@@ -1,0 +1,26 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Logowanie{% endblock %}
+
+{% block content %}
+<h4>Logowanie</h4>
+{% if form.errors %}
+    <p>
+        Nazwa użytkownika lub hasło są nieprawidłowe.
+        Spróbuj ponownie.
+    </p>
+{% else %}
+    <p>Wypełnij poniższy formularz, aby się zalogować. <br>Jeżeli nie masz jeszcze konta, możesz je utworzyć <a href="{% url 'register' %}" class="btn btn-secondary">Tutaj</a>.</p>
+{% endif %}
+<div class="login-form">
+    <form action="{% url 'login' %}" method="post">
+        {{ form|crispy }}
+        {% csrf_token %}
+        <br>
+        <input type="hidden" name="next" value="{{ next }}" class="btn btn-secondary">
+        <p><input type="submit" value="Zaloguj" class="btn btn-secondary"></p>
+    </form>
+    <p><a href="{% url 'password_reset' %}" class="btn btn-secondary">Zapomniałeś hasła?</a> </p>
+</div>
+{% endblock %}

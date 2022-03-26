@@ -6,7 +6,7 @@ from .models import Cup, Player, Match
 class CupForm(forms.ModelForm):
     class Meta:
         model = Cup
-        fields = ('name', 'type', 'choosing_teams')
+        fields = ('name', 'type', 'choosing_teams', 'declarations')
 
     def clean_cup(self):
         if len(str(self.cleaned_data['name'])) > 50:

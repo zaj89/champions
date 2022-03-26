@@ -5,79 +5,135 @@
 
 <h4>Lista graczy rozgrywek: {{ cup.name }}</h4>
 <h4>( {{ cup.number_of_players }} )</h4>
-{% if cup.registration == 'Otwarta' %}
-    {% if cup.choosing_teams == True %}
-        <form action="" method="post">
-            <div class="row">
-              <p class="col-6">
-                {{ player_form.name|as_crispy_field }}
-              </p>
-                <p class="col-6">
-                {{ player_form.team|as_crispy_field }}
-              </p>
-            </div>
-            {% csrf_token %}
-            <center><p><button type="submit" class="btn btn-secondary">Dodaj gracza</button></p></center>
-        </form>
+{% if cup.declarations == 'Ręczna' %}
+    {% if cup.registration == 'Otwarta' %}
+        {% if cup.choosing_teams == True %}
+            <form action="" method="post">
+                <div class="row">
+                  <p class="col-6">
+                    {{ player_form.name|as_crispy_field }}
+                  </p>
+                    <p class="col-6">
+                    {{ player_form.team|as_crispy_field }}
+                  </p>
+                </div>
+                {% csrf_token %}
+                <center><p><button type="submit" class="btn btn-secondary">Dodaj gracza</button></p></center>
+            </form>
+        {% else %}
+            <form action="" method="post">
+                <div class="row">
+                  <p class="col-6">
+                    {{ player_form.name|as_crispy_field }}
+                  </p>
+                </div>
+                {% csrf_token %}
+                <center><p><button type="submit" class="btn btn-secondary">Dodaj gracza</button></p></center>
+            </form>
+        {% endif %}
     {% else %}
-        <form action="" method="post">
-            <div class="row">
-              <p class="col-6">
-                {{ player_form.name|as_crispy_field }}
-              </p>
-            </div>
-            {% csrf_token %}
-            <center><p><button type="submit" class="btn btn-secondary">Dodaj gracza</button></p></center>
-        </form>
+    <p>Rejestracja zamknięta</p>
     {% endif %}
-{% else %}
-<p>Rejestracja zamknięta</p>
-{% endif %}
 
-{% if players %}
-        <table class="table table-striped table-dark">
-        <thead>
-        <tr>
-          <th width="30%" scope="col">Nazwa</th>
-            {% if cup.choosing_teams == True %}
-          <th width="30%" scope="col">Drużyna</th>
-            {% endif %}
-          <th width="5px" scope="col">Z</th>
-          <th width="5px" scope="col">R</th>
-          <th width="5px" scope="col">P</th>
-          <th width="5px" scope="col">BZ</th>
-          <th width="5px" scope="col">BS</th>
-          <th width="5px" scope="col">BB</th>
-          <th width="5px" scope="col">PKT</th>
-          <th scope="col">Akcja</th>
-        </tr>
-        </thead>
-        <tbody>
-    {% for player in players %}
-        <tr>
-            <th scope="row"><span class="btn btn-secondary">{{ player.name }}</span></th>
-            {% if cup.choosing_teams == True %}
-                <th scope="row"><span class="btn btn-secondary">{{ player.team }}</span></th>
-            {% endif %}
-            <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
-          <td>
-              {% if cup.registration == 'Otwarta' %}
-                    <a type="submit" class="btn btn-secondary" href="{% url 'del_players' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
-              {% endif %}
-            </td>
-        </tr>
-            {% endfor %}
-        </tbody>
-        </table>
+    {% if players %}
+            <table class="table table-striped table-dark">
+            <thead>
+            <tr>
+              <th width="30%" scope="col">Nazwa</th>
+                {% if cup.choosing_teams == True %}
+              <th width="30%" scope="col">Drużyna</th>
+                {% endif %}
+              <th width="5px" scope="col">Z</th>
+              <th width="5px" scope="col">R</th>
+              <th width="5px" scope="col">P</th>
+              <th width="5px" scope="col">BZ</th>
+              <th width="5px" scope="col">BS</th>
+              <th width="5px" scope="col">BB</th>
+              <th width="5px" scope="col">PKT</th>
+              <th scope="col">Akcja</th>
+            </tr>
+            </thead>
+            <tbody>
+        {% for player in players %}
+            <tr>
+                <th scope="row"><span class="btn btn-secondary">{{ player.name }}</span></th>
+                {% if cup.choosing_teams == True %}
+                    <th scope="row"><span class="btn btn-secondary">{{ player.team }}</span></th>
+                {% endif %}
+                <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
+                <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
+              <td>
+                  {% if cup.registration == 'Otwarta' %}
+                        <a type="submit" class="btn btn-secondary" href="{% url 'del_players' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+                  {% endif %}
+                </td>
+            </tr>
+                {% endfor %}
+            </tbody>
+            </table>
 
-{% else %}
-<hr>
-<p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
+    {% else %}
+    <hr>
+    <p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
+    {% endif %}
+{% elif cup.declarations == 'Otwarta' %}
+    {% if cup.registration == 'Otwarta' %}
+        <p>Rejerstracja: Otwarta</p>
+        {% else %}
+        <p>Rejestracja: Zamknięta</p>
+        {% endif %}
+
+        {% if cup.players %}
+                <table class="table table-striped table-dark">
+                <thead>
+                <tr>
+                  <th width="30%" scope="col">Nazwa</th>
+                    {% if cup.choosing_teams == True %}
+                  <th width="30%" scope="col">Drużyna</th>
+                    {% endif %}
+                  <th width="5px" scope="col">Z</th>
+                  <th width="5px" scope="col">R</th>
+                  <th width="5px" scope="col">P</th>
+                  <th width="5px" scope="col">BZ</th>
+                  <th width="5px" scope="col">BS</th>
+                  <th width="5px" scope="col">BB</th>
+                  <th width="5px" scope="col">PKT</th>
+                  <th scope="col">Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+            {% for player in cup.players.all %}
+                <tr>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.first_name }}</span></th>
+                    {% if cup.choosing_teams == True %}
+                        <th scope="row"><span class="btn btn-secondary">{{ player.team }}</span></th>
+                    {% endif %}
+                    <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
+                  <td>
+                      {% if cup.registration == 'Otwarta' and request.user == player %}
+                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                      {% endif %}
+                    </td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+
+        {% else %}
+        <hr>
+        <p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
+        {% endif %}
+{% elif cup.declarations == 'Na zaproszenie' %}
 {% endif %}
 {% endblock %}

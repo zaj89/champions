@@ -13,12 +13,13 @@
     {% for cup in cups %}
         <tr>
             <th scope="row"><span class="btn btn-secondary">{{ cup.name }}</span></th>
-          <td><span class="btn btn-secondary">{{ cup.number_of_players }}</span></td>
+          <td><span class="btn btn-secondary">{{ cup.players.all|length }}</span></td>
           <td>
               {% if cup.author == request.user %}
                 <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Zarządzaj</a>
               {% endif %}
-                  <a type="submit" class="btn btn-secondary" href="{% url 'edit_players' cup.id %}">Lista graczy</a>
+                  <a type="submit" class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Lista graczy</a>
+                  <a type="submit" class="btn btn-secondary" href="{% url 'stats' cup.id %}">Statystyki</a>
               {% if cup.author == request.user %}
                   <a type="submit" class="btn btn-secondary" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
               {% endif %}

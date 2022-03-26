@@ -4,10 +4,18 @@
 {% block content %}
 
 <h4>Rozgrywki: {{ cup.name }}</h4>
+{% if cup.declarations == 'Ręczna' %}
+<h5>(Offline)</h5>
+{% elif cup.declarations == 'Otwarta' %}
+<h5>(Online - Otwarte)</h5>
+{% elif cup.declarations == 'Na zapraszenie' %}
+<h5>(Online - Na zaproszenie)</h5>
+{% endif %}
 <h5>Rodzaj: {% if cup.type == "Puchar" %}Puchar
             {% elif cup.type == "1 mecz" %}Liga (1 mecz)
             {% elif cup.type == "2 mecze" %}Liga (2 mecze)
             {% endif %}</h5>
+
 {% if cup.type == 'Puchar' %}
     <h5>Aktualny etap:
                         {% if cup.actual_round == None %}
@@ -31,10 +39,16 @@
 {% else %}
         {% if cup.number_of_players < 4 %}
             <p class="btn btn-info"> Rejetracja otwarta</p>            <br>
-            <p class="btn btn-warning">Żeby rozpocząć turniej trzeba wprowadzić minimum 4 graczy.</p>
+            {% if cup.declarations == 'Ręczna' %}
+                <p class="btn btn-warning">Żeby rozpocząć turniej trzeba wprowadzić minimum 4 graczy.</p>
+            {% else %}
+                <p class="btn btn-warning">Żeby rozpocząć turniej musi zarejestrować się minimum 4 graczy.</p>
+            {% endif %}
             <br>
             <p class="btn btn-info">Liczba graczy w systemie: {{ cup.number_of_players }}</p>
-            <p><a href="{% url 'edit_players' cup.id %}" class="btn btn-primary">Wprowadź</a></p>
+            {% if cup.declarations == 'Ręczna' %}
+                <p><a href="{% url 'edit_players' cup.id %}" class="btn btn-primary">Wprowadź</a></p>
+            {% endif %}
         {% else %}
             <p><a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij rejestrację</a></p>
             <p class="btn btn-info">Liczba graczy w systemie: {{ cup.number_of_players }}</p>

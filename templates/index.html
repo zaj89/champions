@@ -21,29 +21,63 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <div class="btn-group" style="margin:5px">
+                    {% if request.user.is_authenticated %}
+                        <div class="btn-group" style="margin:5px">
+                  <a href="{% url 'cup_new' %}" class="btn btn-secondary">
+                    Utwórz
+                  </a>
+                        </div>
+                        <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Champions
+                    Offline
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{% url 'cup_new' %}">Utwórz</a></li>
-                    <li><a class="dropdown-item" href="{% url 'cups_list' %}">Lista</a></li>
-                    {% if last_cup %}
+                    <li><a class="dropdown-item" href="{% url 'cups_list_offline' request.user.id %}">Lista</a></li>
+                    {% if last_cup_offline %}
                         <li><hr class="dropdown-divider" /></li>
                         <li>
-                                <a class="dropdown-item" href="{% url 'dashboard' last_cup.id %}">Kontynuuj</a>
+                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_offline.id %}">Kontynuuj</a>
                         </li>
                     {% endif %}
                   </ul>
                 </div>
-                <div class="btn-group" style="margin:5px">
+               <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Użytkownik
+                    Online
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Zaloguj</a></li>
-                    <li><a class="dropdown-item" href="#">Panel</a></li>
-                    <li><a class="dropdown-item" href="#">Wyloguj</a></li>
+                    <li><a class="dropdown-item" href="{% url 'my_cups_list_online' request.user.id %}">Moje</a></li>
+                    <li><a class="dropdown-item" href="{% url 'cup_list_with_open_registration_online' %}">Dołącz</a></li>
+                    {% if last_cup_online %}
+                        <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item" href="{% url 'list_matches_to_enter' %}">Wpisz</a></li>
+                            <li><a class="dropdown-item" href="{% url 'list_matches_to_confirm' %}">Potwierdź</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_online.id %}">Kontynuuj</a>
+                        </li>
+                    {% endif %}
+                  </ul>
+                </div>
+                        {% endif %}
+                <div class="btn-group" style="margin:5px">
+                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if request.user.is_authenticated %}
+                      {{ request.user.first_name }}
+                    {% else %}
+                      Niezalogowany
+                    {% endif %}
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    {% if request.user.is_authenticated %}
+                            {% if user.profile.status == 'Administrator' %}
+                                 <li><a href="{% url 'panel_admin' %}">Admin</a></li>
+                            {% endif %}
+                      <li><a class="dropdown-item" href="{% url 'profile' request.user.id %}">Profil</a></li>
+                      <li><a class="dropdown-item" href="{% url 'logout' %}">Wyloguj</a></li>
+                    {% else %}
+                    <li><a class="dropdown-item" href="{% url 'login' %}">Zaloguj</a></li>
+                    {% endif %}
                   </ul>
                 </div>
             </div>
@@ -55,7 +89,7 @@
                 {% include 'messages.html' %}
                 {% block content %}
                 <h1>System prowadzenia rozgrywek</h1>
-                <p class="lead">Zaloguj się i przeprowadź zorganizowane rozgrywki ze znajomymi</p>
+                <p class="lead">Przeprowadź zorganizowane rozgrywki ze znajomymi offline <br>lub zdalnie online za pomocą kont użytkowników</p>
                 <center><img src="{% static 'images/skills.gif' %}" width="30%"></center>
                 {% endblock %}
             </div>

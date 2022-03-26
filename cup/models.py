@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 
 # The Player class is a model that contains the information about a player
@@ -20,6 +21,7 @@ class Player(models.Model):
     points = models.SmallIntegerField(verbose_name='Punkty', default=0)
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup', default='')
     team = models.CharField(max_length=30, blank=True, verbose_name='Drużyna', default='', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True)
 
     def clean(self):
         if len(str(self.name)) > 30:
@@ -61,7 +63,8 @@ class Cup(models.Model):
     number_of_players = models.PositiveSmallIntegerField(verbose_name='Liczba graczy', default=0,
                                                          validators=[MinValueValidator(4),
                                                                      MaxValueValidator(128)])
-    # do rozbudowania
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Autor', related_name='author',
+                               default=None, null=True)
     types = (
         ('Puchar', (
             ('Puchar', 'Puchar'),
@@ -89,6 +92,19 @@ class Cup(models.Model):
     finished = models.BooleanField(verbose_name='Zakończono rozgrywki', default=False)
     choosing_teams = models.BooleanField(verbose_name='Wybór drużyn', default=False)
     players_order = models.CharField(max_length=50, blank=False, verbose_name='Kolejność Graczy', default='')
+    online = models.BooleanField(verbose_name='online?', default=False)
+    declarations_status = (
+        ('Offline', (
+            ('Ręczna', 'Ręczna'),
+        )),
+        ('Online', (
+            ('Otwarta', 'Otwarta'),
+            ('Na zaproszenie', 'Na zaproszenie'),
+        )),
+    )
+    declarations = models.CharField(max_length=20, choices=declarations_status, default=declarations_status[0][0],
+                                    verbose_name='Rejestracja')
+    players = models.ManyToManyField(User, related_name='players')
 
     def clean(self):
         if len(str(self.name)) > 50:
