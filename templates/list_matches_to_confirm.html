@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<h4>Mecze do Potwierdzdenia:</h4>
+<h4>Archiwum</h4>
 <hr>
 <br>
 {% if matches %}
@@ -19,28 +19,26 @@
         </thead>
         <tbody>
     {% for match in matches %}
-        {% if match.player1 == request.user or match.player2 == request.user and not match.finished %}
+        {% if match.confirmed %}
+            {% if match.player1.user == request.user or match.player2.user == request.user %}
         <tr>
             <th scope="row" width="22.5%"><span></span></th>
             <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
-          <td width="15%"><span class="btn btn-secondary">Nie rozegrano</span></td>
+          <td width="15%"><span class="btn btn-secondary">{% if match.finished and not match.confirmed %}Niepotwierdzony ({{ match.result1 }}:{{ match.result2 }}){% elif not match.finished and not match.confirmed %}Nierozegrany{% else %}{{ match.result1 }} : {{ match.result2 }}{% endif %}</span></td>
           <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
           <td width="45%">
-                    {% if match.finished == False %}
-                           <a class="btn btn-secondary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
+                    {% if match.finished == False and match.player1.user == request.user %}
+                           <a class="btn btn-secondary" href="{% url 'enter_the_result_home' match.id %}">Wprowadź</a>
+                    {% elif match.confirmed == False and match.player1.user == request.user and match.finished == True %}
+                           <a class="btn btn-secondary" href="{% url 'delete_the_result_home' match.id %}">Wyczyść</a>
+                    {% elif match.confirmed == False and match.player2.user == request.user and match.finished == True %}
+                           <a class="btn btn-secondary" href="{% url 'confirm_the_result' match.id %}">Potwierdź</a>
                     {% else %}
-                        {% if cup.type == "Puchar" %}
-                            {% if cup.actual_round.id == round.id %}
-                                {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
-                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
-                                {% endif %}
-                            {% endif %}
-                        {% elif cup.type == "1 mecz" %}
-                                    <a class="btn btn-secondary" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
-                        {% endif %}
+                           <a class="btn btn-secondary">Rozegrany</a>
                     {% endif %}
           </td>
         </tr>
+        {% endif %}
         {% endif %}
     {% endfor %}
         </tbody>

@@ -17,6 +17,8 @@
           <td>
               {% if cup.author == request.user %}
                 <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Zarządzaj</a>
+              {% elif request.user in cup.players.all %}
+                <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Podgląd</a>
               {% endif %}
                   <a type="submit" class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Lista graczy</a>
               {% if cup.author == request.user %}

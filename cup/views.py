@@ -99,7 +99,13 @@ def dashboard(request, cup_id: int):
             pass
         else:
             match_not_played = True
-    rounds = Round.objects.filter(cup=cup).order_by('match', 'id')
+    match_not_confirmed = False
+    for match in list(matches):
+        if match.confirmed:
+            pass
+        else:
+            match_not_played = True
+    rounds = Round.objects.filter(cup=cup).order_by('match', '-id')
     players = Player.objects.filter(cup=cup).order_by('-points')
     if request.user.is_authenticated:
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
@@ -110,13 +116,15 @@ def dashboard(request, cup_id: int):
                                                   'rounds': rounds,
                                                   'players': players,
                                                   'last_cup_online': last_cup_online,
-                                                  'last_cup_offline': last_cup_offline})
+                                                  'last_cup_offline': last_cup_offline,
+                                                  'match_not_confirmed': match_not_confirmed})
     else:
         return render(request, 'dashboard.html', {'cup': cup,
                                                   'matches': matches,
                                                   'match_not_played': match_not_played,
                                                   'rounds': rounds,
-                                                  'players': players})
+                                                  'players': players,
+                                                  'match_not_confirmed': match_not_confirmed})
 
 
 def stats(request, cup_id: int):
@@ -578,6 +586,7 @@ def enter_the_result(request, cup_id: int, match_id: int):
         if match_form.is_valid():
             match_result = match_form.save(commit=False)
             match_result.finished = True
+            match_result.confirmed = True
             if cup.type == 'Puchar':
                 if match_result.result1 > match_result.result2:
                     actual_round.promotion.add(match_result.player1)
@@ -721,6 +730,7 @@ def delete_the_result(request, cup_id: int, match_id: int):
     match.save()
     messages.success(request, f'Skasowano wynik: {match.player1}[{match.result1}] vs [{match.result2}] {match.player2}')
     match.finished = False
+    match.confirmed = False
     match.result1 = None
     match.result2 = None
     match.save()
@@ -751,6 +761,7 @@ def join_the_cup(request, cup_id):
     cup.number_of_players += 1
     cup.save()
     Player.objects.create(user=request.user, name=request.user.first_name, cup=cup)
+    messages.success(request, f"Dołączyłeś do {cup.name}.")
     return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
 
 
@@ -761,6 +772,7 @@ def left_the_cup(request, cup_id):
     cup.save()
     player_to_del = Player.objects.get(user=request.user)
     player_to_del.delete()
+    messages.success(request, f"Zrezygnowałeś z udziału w {cup.name}.")
     return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
 
 
@@ -775,6 +787,153 @@ def list_matches_to_enter(request):
                                                               })
     else:
         return render(request, 'list_matches_to_enter.html', {'matches': matches})
+
+
+def enter_the_result_home(request, match_id: int):
+    """
+    This function is used to enter the result of a match
+
+    :type cup_id: int
+    :param cup_id: The id of the cup
+    :param match_id: The id of the match that the user is trying to enter the result for
+    """
+    match = Match.objects.get(id=match_id)
+    cup = Cup.objects.get(id=match.cup.id)
+    instance = get_object_or_404(Match, id=match_id)
+    if request.method == 'POST':
+        if cup.type == 'Puchar':
+            match_form = MatchCupForm(data=request.POST or None, instance=instance)
+        elif cup.type == '1 mecz':
+            match_form = MatchLeagueForm(data=request.POST or None, instance=instance)
+        elif cup.type == '2 mecze':
+            match_form = MatchLeagueForm(data=request.POST or None, instance=instance)
+        if match_form.is_valid():
+            match_result = match_form.save(commit=False)
+            match_result.finished = True
+            match_result.save()
+
+            messages.success(request, f'Wprowadzono wynik: '
+                                      f'{match_result.player1}[{match_result.result1}] '
+                                      f'vs '
+                                      f'[{match_result.result2}] {match_result.player2}')
+            return HttpResponseRedirect('/cup/online/list_matches_to_enter/')
+        else:
+            match = Match.objects.get(id=match_id)
+            matches = Match.objects.filter(cup=cup)
+            match_not_played = False
+            for ifmatch in list(matches):
+                if ifmatch.finished:
+                    pass
+                else:
+                    match_not_played = True
+            if request.user.is_authenticated:
+                last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
+                last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
+                return render(request, 'enter_the_result.html', {'cup': cup,
+                                                                 'match': match,
+                                                                 'match_form': match_form,
+                                                                 'match_not_played': match_not_played,
+                                                                 'last_cup_online': last_cup_online,
+                                                                 'last_cup_offline': last_cup_offline
+                                                                 })
+            else:
+                return render(request, 'enter_the_result.html', {'cup': cup,
+                                                                 'match': match,
+                                                                 'match_form': match_form,
+                                                                 'match_not_played': match_not_played})
+
+    else:
+        if cup.type == "Puchar":
+            match_form = MatchCupForm()
+        elif cup.type == "1 mecz":
+            match_form = MatchLeagueForm()
+        elif cup.type == "2 mecze":
+            match_form = MatchLeagueForm()
+    match = Match.objects.get(id=match_id)
+    matches = Match.objects.filter(cup=cup)
+    match_not_played = False
+    for ifmatch in list(matches):
+        if ifmatch.finished:
+            pass
+        else:
+            match_not_played = True
+    if request.user.is_authenticated:
+        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
+        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
+        return render(request, 'enter_the_result.html', {'cup': cup,
+                                                         'match': match,
+                                                         'match_form': match_form,
+                                                         'match_not_played': match_not_played,
+                                                         'last_cup_online': last_cup_online,
+                                                         'last_cup_offline': last_cup_offline})
+    else:
+        return render(request, 'enter_the_result.html', {'cup': cup,
+                                                         'match': match,
+                                                         'match_form': match_form,
+                                                         'match_not_played': match_not_played})
+
+
+def delete_the_result_home(request, match_id: int):
+    """
+    This function is used to enter the result of a match
+
+    :type cup_id: int
+    :param cup_id: The id of the cup
+    :param match_id: The id of the match that the user is trying to enter the result for
+    """
+    match = Match.objects.get(id=match_id)
+    messages.success(request, f'Skasowano wynik: {match.player1}[{match.result1}] vs [{match.result2}] {match.player2}')
+    match.finished = False
+    match.result1 = None
+    match.result2 = None
+    match.save()
+    return HttpResponseRedirect('/cup/online/list_matches_to_enter/')
+
+
+def confirm_the_result(request, match_id):
+    match = Match.objects.get(id=match_id)
+    cup = Cup.objects.get(id=match.cup.id)
+    actual_round = cup.actual_round
+    if cup.type == 'Puchar':
+        if match.result1 > match.result2:
+            actual_round.promotion.add(match.player1)
+            actual_round.save()
+        else:
+            actual_round.promotion.add(match.player2)
+            actual_round.save()
+    player1 = match.player1
+    player2 = match.player2
+    player1.goals_scored += match.result1
+    player2.goals_scored += match.result2
+    player2.goals_losted += match.result1
+    player1.goals_losted += match.result2
+    player1.goals_bilans += match.result1
+    player1.goals_bilans -= match.result2
+    player2.goals_bilans += match.result2
+    player2.goals_bilans -= match.result1
+    if match.result1 > match.result2:
+        player1.wins += 1
+        player1.points += 3
+        player2.losses += 1
+    if match.result1 < match.result2:
+        player2.wins += 1
+        player2.points += 3
+        player1.losses += 1
+    if match.result1 == match.result2:
+        player2.draws += 1
+        player2.points += 1
+        player1.points += 1
+        player1.draws += 1
+    player1.save()
+    player2.save()
+    match.confirmed = True
+    match.save()
+    if cup.type == "Puchar":
+        if cup.actual_round.name == 'Finał':
+            cup.finished = True
+            cup.save()
+    messages.success(request, "Wynik potwierdzony.")
+    return HttpResponseRedirect('/cup/online/list_matches_to_enter/')
 
 
 def list_matches_to_confirm(request):

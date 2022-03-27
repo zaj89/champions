@@ -44,6 +44,7 @@ class Match(models.Model):
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_in_match', default='')
     round = models.ForeignKey('Round', on_delete=models.CASCADE, related_name='round', default='')
     finished = models.BooleanField(verbose_name="Rozegrany", default=False)
+    confirmed = models.BooleanField(verbose_name='Czy potwierdzony?', default=False)
 
     def clean(self):
         if self.result1 == self.result2 and self.cup.type == 'Puchar':
