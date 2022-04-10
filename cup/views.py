@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from .forms import CupForm, PlayerForm, MatchCupForm, MatchLeagueForm, PlayerWithTeamForm
 from .models import Cup, Player, Match, Round
+from account.models import ProfileInCup, Profile
 
 
 def cups_list_offline(request, user_id):
@@ -15,12 +16,17 @@ def cups_list_offline(request, user_id):
     The view displays a list of cups
     """
     cups = Cup.objects.filter(author_id=user_id, declarations='Ręczna')
+    matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list.html', {'cups': cups,
                                                   'last_cup_online': last_cup_online,
-                                                  'last_cup_offline': last_cup_offline})
+                                                  'last_cup_offline': last_cup_offline,
+                                                  'matches_user_to_enter': matches_user_to_enter,
+                                                  'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'cups_list.html', {'cups': cups})
 
@@ -34,11 +40,16 @@ def my_cups_list_online(request, user_id):
     """
     cups = Cup.objects.filter(author_id=user_id).exclude(declarations='Ręczna')
     if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list_online_my.html', {'cups': cups,
                                                             'last_cup_online': last_cup_online,
-                                                            'last_cup_offline': last_cup_offline})
+                                                            'last_cup_offline': last_cup_offline,
+                                                            'matches_user_to_enter': matches_user_to_enter,
+                                                            'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'cups_list_online_my.html', {'cups': cups})
 
@@ -75,11 +86,16 @@ def cup_new(request):
     else:
         cup_form = CupForm()
     if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cup_new.html', {'cup_form': cup_form,
                                                 'last_cup_online': last_cup_online,
-                                                'last_cup_offline': last_cup_offline})
+                                                'last_cup_offline': last_cup_offline,
+                                                'matches_user_to_enter': matches_user_to_enter,
+                                                'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'cup_new.html', {'cup_form': cup_form})
 
@@ -105,9 +121,14 @@ def dashboard(request, cup_id: int):
             pass
         else:
             match_not_played = True
-    rounds = Round.objects.filter(cup=cup).order_by('match', '-id')
+    rounds = Round.objects.filter(cup=cup).order_by('match', 'id')
     players = Player.objects.filter(cup=cup).order_by('-points')
+    profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
+    profiles = Profile.objects.filter(user__in=cup.players.all())
     if request.user.is_authenticated:
+        matchess = Match.objects.all()
+        matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'dashboard.html', {'cup': cup,
@@ -115,15 +136,20 @@ def dashboard(request, cup_id: int):
                                                   'match_not_played': match_not_played,
                                                   'rounds': rounds,
                                                   'players': players,
+                                                  'profiles': profiles,
+                                                  'profiles_in_cup': profiles_in_cup,
                                                   'last_cup_online': last_cup_online,
                                                   'last_cup_offline': last_cup_offline,
-                                                  'match_not_confirmed': match_not_confirmed})
+                                                  'match_not_confirmed': match_not_confirmed,
+                                                  'matches_user_to_enter': matches_user_to_enter,
+                                                  'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'dashboard.html', {'cup': cup,
                                                   'matches': matches,
                                                   'match_not_played': match_not_played,
                                                   'rounds': rounds,
                                                   'players': players,
+                                                  'profiles': profiles,
                                                   'match_not_confirmed': match_not_confirmed})
 
 
@@ -145,6 +171,9 @@ def stats(request, cup_id: int):
             match_not_played = True
     rounds = Round.objects.filter(cup=cup)[::-1]
     if request.user.is_authenticated:
+        matchess = Match.objects.all()
+        matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'stats.html', {'cup': cup,
@@ -153,7 +182,9 @@ def stats(request, cup_id: int):
                                               'rounds': rounds,
                                               'players_goals': players_goals,
                                               'last_cup_online': last_cup_online,
-                                              'last_cup_offline': last_cup_offline})
+                                              'last_cup_offline': last_cup_offline,
+                                              'matches_user_to_enter': matches_user_to_enter,
+                                              'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'stats.html', {'cup': cup,
                                               'matches': matches,
@@ -171,7 +202,9 @@ def edit_players(request, cup_id: int):
     :return: A rendered template of the edit_players.html page.
     """
     cup = Cup.objects.get(id=cup_id)
-    players = Player.objects.filter(cup_id=cup_id)
+    players = Player.objects.filter(cup=cup)
+    profiles = Profile.objects.filter(user__in=cup.players.all())
+    profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
     if request.method == 'POST':
         if not cup.choosing_teams:
             player_form = PlayerForm(data=request.POST)
@@ -188,22 +221,52 @@ def edit_players(request, cup_id: int):
     else:
         player_form = PlayerForm()
     if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
+                                                     'profiles': profiles,
+                                                     'profiles_in_cup': profiles_in_cup,
                                                      'player_form': player_form,
                                                      'last_cup_online': last_cup_online,
-                                                     'last_cup_offline': last_cup_offline})
+                                                     'last_cup_offline': last_cup_offline,
+                                                     'matches_user_to_enter': matches_user_to_enter,
+                                                     'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
-                                                     'player_form': player_form,})
+                                                     'profiles': profiles,
+                                                     'profiles_in_cup': profiles_in_cup,
+                                                     'player_form': player_form})
 
 
 def edit_players_online(request, cup_id: int):
     cup = Cup.objects.get(id=cup_id)
-    return render(request, 'edit_players.html', {'cup': cup})
+    players = Player.objects.filter(cup=cup)
+    profiles = Profile.objects.filter(user__in=cup.players.all())
+    profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
+    if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
+        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
+        return render(request, 'edit_players.html', {'cup': cup,
+                                                     'players': players,
+                                                     'profiles': profiles,
+                                                     'profiles_in_cup': profiles_in_cup,
+                                                     'last_cup_online': last_cup_online,
+                                                     'last_cup_offline': last_cup_offline,
+                                                     'matches_user_to_enter': matches_user_to_enter,
+                                                     'matches_user_to_confirm': matches_user_to_confirm})
+    else:
+        return render(request, 'edit_players.html', {'cup': cup,
+                                                     'players': players,
+                                                     'profiles': profiles,
+                                                     'profiles_in_cup': profiles_in_cup})
 
 
 def del_players(request, cup_id: int, player_to_del: int):
@@ -263,6 +326,9 @@ def close_registration(request, cup_id: int):
         cup.len_rounds = len_rounds
         cup.registration = 'Zamknięta'
         cup.save()
+        for player in players:
+            profile = Profile.objects.get(user=player.user)
+            ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
         messages.success(request, 'Rejestracja została zamknięta.')
         return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
@@ -281,6 +347,9 @@ def close_registration(request, cup_id: int):
         else:
             cup.players_order = cup.players_order + "pausing,"
         cup.save()
+        for player in players:
+            profile = Profile.objects.get(user=player.user)
+            ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
         messages.success(request, 'Rejestracja została zamknięta.')
         return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
@@ -291,6 +360,9 @@ def close_registration(request, cup_id: int):
         for player in players:
             cup.players_order = str(cup.players_order) + str(player.id) + ','
         cup.save()
+        for player in players:
+            profile = Profile.objects.get(user=player.user)
+            ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
         messages.success(request, 'Rejestracja została zamknięta.')
         return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
@@ -639,6 +711,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
                 else:
                     match_not_played = True
             if request.user.is_authenticated:
+                matchess = Match.objects.all()
+                matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+                matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
                 last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
                 last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -646,7 +721,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
                                                                  'match_form': match_form,
                                                                  'match_not_played': match_not_played,
                                                                  'last_cup_online': last_cup_online,
-                                                                 'last_cup_offline': last_cup_offline
+                                                                 'last_cup_offline': last_cup_offline,
+                                                                 'matches_user_to_enter': matches_user_to_enter,
+                                                                 'matches_user_to_confirm': matches_user_to_confirm
                                                                  })
             else:
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -670,6 +747,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
         else:
             match_not_played = True
     if request.user.is_authenticated:
+        matchess = Match.objects.all()
+        matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'enter_the_result.html', {'cup': cup,
@@ -677,7 +757,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
                                                          'match_form': match_form,
                                                          'match_not_played': match_not_played,
                                                          'last_cup_online': last_cup_online,
-                                                         'last_cup_offline': last_cup_offline})
+                                                         'last_cup_offline': last_cup_offline,
+                                                         'matches_user_to_enter': matches_user_to_enter,
+                                                         'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'enter_the_result.html', {'cup': cup,
                                                          'match': match,
@@ -744,11 +826,16 @@ def delete_the_result(request, cup_id: int, match_id: int):
 def cup_list_with_open_registration_online(request):
     cups = Cup.objects.filter(declarations='Otwarta')
     if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list_online_to_join.html', {'cups': cups,
                                                                  'last_cup_online': last_cup_online,
-                                                                 'last_cup_offline': last_cup_offline
+                                                                 'last_cup_offline': last_cup_offline,
+                                                                 'matches_user_to_enter': matches_user_to_enter,
+                                                                 'matches_user_to_confirm': matches_user_to_confirm
                                                                  })
     else:
         return render(request, 'cups_list_online_to_join.html', {'cups': cups,
@@ -779,11 +866,15 @@ def left_the_cup(request, cup_id):
 def list_matches_to_enter(request):
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'list_matches_to_enter.html', {'matches': matches,
                                                               'last_cup_online': last_cup_online,
-                                                              'last_cup_offline': last_cup_offline
+                                                              'last_cup_offline': last_cup_offline,
+                                                              'matches_user_to_enter': matches_user_to_enter,
+                                                              'matches_user_to_confirm': matches_user_to_confirm
                                                               })
     else:
         return render(request, 'list_matches_to_enter.html', {'matches': matches})
@@ -827,6 +918,9 @@ def enter_the_result_home(request, match_id: int):
                 else:
                     match_not_played = True
             if request.user.is_authenticated:
+                matchess = Match.objects.all()
+                matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+                matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
                 last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
                 last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -834,7 +928,9 @@ def enter_the_result_home(request, match_id: int):
                                                                  'match_form': match_form,
                                                                  'match_not_played': match_not_played,
                                                                  'last_cup_online': last_cup_online,
-                                                                 'last_cup_offline': last_cup_offline
+                                                                 'last_cup_offline': last_cup_offline,
+                                                                 'matches_user_to_enter': matches_user_to_enter,
+                                                                 'matches_user_to_confirm': matches_user_to_confirm
                                                                  })
             else:
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -858,6 +954,9 @@ def enter_the_result_home(request, match_id: int):
         else:
             match_not_played = True
     if request.user.is_authenticated:
+        matchess = Match.objects.all()
+        matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'enter_the_result.html', {'cup': cup,
@@ -865,7 +964,9 @@ def enter_the_result_home(request, match_id: int):
                                                          'match_form': match_form,
                                                          'match_not_played': match_not_played,
                                                          'last_cup_online': last_cup_online,
-                                                         'last_cup_offline': last_cup_offline})
+                                                         'last_cup_offline': last_cup_offline,
+                                                         'matches_user_to_enter': matches_user_to_enter,
+                                                         'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'enter_the_result.html', {'cup': cup,
                                                          'match': match,
@@ -901,8 +1002,9 @@ def confirm_the_result(request, match_id):
         else:
             actual_round.promotion.add(match.player2)
             actual_round.save()
-    player1 = match.player1
-    player2 = match.player2
+
+    player1 = ProfileInCup.objects.get(user=match.player1.user, cup=cup)
+    player2 = ProfileInCup.objects.get(user=match.player2.user, cup=cup)
     player1.goals_scored += match.result1
     player2.goals_scored += match.result2
     player2.goals_losted += match.result1
@@ -936,14 +1038,28 @@ def confirm_the_result(request, match_id):
     return HttpResponseRedirect('/cup/online/list_matches_to_enter/')
 
 
+def reject_the_result(request, match_id):
+    match = Match.objects.get(id=match_id)
+    messages.success(request, f'Odrzucono wynik: {match.player1}[{match.result1}] vs [{match.result2}] {match.player2}')
+    match.finished = False
+    match.result1 = None
+    match.result2 = None
+    match.save()
+    return HttpResponseRedirect('/cup/online/list_matches_to_enter/')
+
+
 def list_matches_to_confirm(request):
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'list_matches_to_confirm.html', {'matches': matches,
                                                                 'last_cup_online': last_cup_online,
-                                                                'last_cup_offline': last_cup_offline
+                                                                'last_cup_offline': last_cup_offline,
+                                                                'matches_user_to_enter': matches_user_to_enter,
+                                                                'matches_user_to_confirm': matches_user_to_confirm
                                                                 })
     else:
         return render(request, 'list_matches_to_confirm.html', {'matches': matches})

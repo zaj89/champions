@@ -45,6 +45,14 @@
                <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Online
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                        {{ matches_user_to_enter|length }}
+                        <span class="visually-hidden">unread messages</span>
+                      </span>
+                      <span class="position-absolute top-100 start-100 translate-middle badge rounded-pill bg-success">
+                        {{ matches_user_to_confirm|length }}
+                        <span class="visually-hidden">unread messages</span>
+                      </span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                       {% if last_cup_online %}

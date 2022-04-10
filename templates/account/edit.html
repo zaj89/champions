@@ -1,12 +1,14 @@
 {% extends 'index.html' %}
+{% load crispy_forms_tags %}
 
 {% block title %}Edycja kursanta{% endblock %}
 
 {% block content %}
-<h4>Edycja kursanta</h4>
+<h4>Edycja użytkownika</h4>
 <p>Ustawienia konta możesz zmienić za pomocą poniższego formularza:</p>
 <form action="." method="post" enctype="multipart/form-data">
     {{ user_form|crispy }}
+    {{ profile_form|crispy }}
     {% csrf_token %}
     <p><input class="btn btn-secondary" type="submit" value="Zapisz zmiany"></p>
 </form>

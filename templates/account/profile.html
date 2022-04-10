@@ -4,7 +4,16 @@
 {% block title %}Edycja kursanta{% endblock %}
 
 {% block content %}
-<h4>Nick: {{ user.username }}</h4>
-    Imię: {{ user.username }}<br>
-    E-mail: {{ user.email }}<br>
+<center>
+<div class="card" style="width: 20rem;">
+  <div class="card-header">
+    Nick: {{ user.username }} <br><a class="btn btn-secondary" href="{% url 'edit' %}">Edytuj</a>
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Imię: {{ user.username }}</li>
+    <li class="list-group-item">E-mail: {{ user.email }}</li>
+    <li class="list-group-item">Drużyna: {{ profile.team }}</li>
+  </ul>
+</div>
+</center>
 {% endblock %}

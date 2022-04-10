@@ -7,6 +7,7 @@
 <p>Wypełnij poniższy formularz, aby się zarejestrować.</p>
 <form action="." method="post">
     {{ user_form.as_p }}
+    {{ profile_form.as_p }}
     {% csrf_token %}
     <p><input class="btn btn-secondary" type="submit" value="Utwórz konto"></p>
 </form>

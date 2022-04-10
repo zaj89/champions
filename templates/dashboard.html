@@ -95,17 +95,48 @@
         <tr>
             <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
           <td><span class="btn btn-secondary">{{ player.name }}</span></td>
-            {% if cup.choosing_teams == True %}
-                <th scope="row"><span class="btn btn-secondary">{{ player.team }}</span></th>
-            {% endif %}
-            <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
-            <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
-               </tr>
+                    {% if cup.choosing_teams == True %}
+                        {% if cup.registration == 'Zamknięta' %}
+                            {% for profile in profiles_in_cup.all %}
+                                {% if profile.user == player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for profile in profiles.all %}
+                                {% if profile.user == player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                        {% if cup.registration == 'Zamknięta' %}
+                                {% for profile in profiles_in_cup.all %}
+                                      {% if profile.user == player.user %}
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_scored }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>
+                          <td>
+                                      {% endif %}
+                                            {% endfor %}
+                          {% else %}
+                            {% for profile in profiles.all %}
+                                      {% if profile.user == player %}
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                          <td>
+                                      {% endif %}
+                                            {% endfor %}
+                          {% endif %}
             {% endfor %}
         </tbody>
         </table>

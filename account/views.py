@@ -1,11 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login
-
 from cup.models import Cup
-from .forms import LoginForm, UserRegistrationForm, UserEditForm
+from account.models import Profile
+from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileForm
+from cup.models import Match
 
 
 def user_login(request):
@@ -39,35 +41,60 @@ def user_login(request):
 def register(request):
     if request.method == "POST":
         user_form = UserRegistrationForm(request.POST)
-        if user_form.is_valid():
+        profile_form = ProfileForm(request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
             new_user = user_form.save(commit=False)
             new_user.set_password(user_form.cleaned_data['password'])
             new_user.save()
-            return render(request, 'account/register_done.html', {'new_user': new_user})
+            new_profile = profile_form.save(commit=False)
+            new_profile.user = new_user
+            new_profile.save()
+            messages.success(request, 'Konto zostało utworzone. Możesz się zalogować.')
+            return HttpResponseRedirect('/account/login/')
     else:
         user_form = UserRegistrationForm()
-        return render(request, 'account/register.html', {'user_form': user_form})
+        profile_form = ProfileForm()
+        return render(request, 'account/register.html', {'user_form': user_form,
+                                                         'profile_form': profile_form})
 
 
 @login_required
 def edit(request):
+    profile = Profile.objects.get(user=request.user)
+    matches = Match.objects.all()
+    matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+    matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
     if request.method =='POST':
-        user_form = UserEditForm(instance=request.user.profile, data=request.POST)
+        user_form = UserEditForm(instance=request.user, data=request.POST)
+        profile_form = ProfileForm(instance=profile, data=request.POST)
         if user_form.is_valid():
             user_form.save()
+            profile_form.save()
+            messages.success(request, 'Dane konta został zaktualizowane.')
     else:
         user_form = UserEditForm(instance=request.user)
-    return render(request, 'account/edit.html', {'user_form': user_form})
+        profile_form = ProfileForm(instance=profile)
+    return render(request, 'account/edit.html', {'user_form': user_form,
+                                                 'profile_form': profile_form,
+                                                 'matches_user_to_enter': matches_user_to_enter,
+                                                 'matches_user_to_confirm': matches_user_to_confirm})
 
 
 @login_required
 def profile(request, user_id):
     user = User.objects.get(id=user_id)
+    profile = Profile.objects.get(user=user)
+    matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/profile.html', {'user': user,
+                                                        'profile': profile,
                                                         'last_cup_online': last_cup_online,
-                                                        'last_cup_offline': last_cup_offline})
+                                                        'last_cup_offline': last_cup_offline,
+                                                        'matches_user_to_enter': matches_user_to_enter,
+                                                        'matches_user_to_confirm': matches_user_to_confirm})
     else:
         return render(request, 'account/profile.html', {'user': user})
