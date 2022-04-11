@@ -45,14 +45,18 @@
                <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Online
+                      {% if matches_user_to_enter|length > 0 %}
                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
                         {{ matches_user_to_enter|length }}
                         <span class="visually-hidden">unread messages</span>
                       </span>
+                      {% endif %}
+                      {% if matches_user_to_confirm|length > 0 %}
                       <span class="position-absolute top-100 start-100 translate-middle badge rounded-pill bg-success">
                         {{ matches_user_to_confirm|length }}
                         <span class="visually-hidden">unread messages</span>
                       </span>
+                      {% endif %}
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                       {% if last_cup_online %}
@@ -86,7 +90,9 @@
                       <li><a class="dropdown-item" href="{% url 'profile' request.user.id %}">Profil</a></li>
                       <li><a class="dropdown-item" href="{% url 'logout' %}">Wyloguj</a></li>
                     {% else %}
-                    <li><a class="dropdown-item" href="{% url 'login' %}">Zaloguj</a></li>
+                    <li><a class="dropdown-item" href="{% url 'login' %}">Logowanie</a></li>
+                    <li><a class="dropdown-item" href="{% url 'register' %}">Rejestracja</a></li>
+
                     {% endif %}
                   </ul>
                 </div>

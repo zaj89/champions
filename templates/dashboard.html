@@ -2,8 +2,10 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-
-<h4>Rozgrywki: {{ cup.name }}</h4>
+<div class="container">
+  <div class="row align-items-center">
+    <div class="col">
+      <h4>Rozgrywki: {{ cup.name }}</h4>
 {% if cup.declarations == 'Ręczna' %}
 <h5>(Offline)</h5>
 {% elif cup.declarations == 'Otwarta' %}
@@ -15,7 +17,11 @@
             {% elif cup.type == "1 mecz" %}Liga (1 mecz)
             {% elif cup.type == "2 mecze" %}Liga (2 mecze)
             {% endif %}</h5>
-
+<h5>Rejestracja: {% if cup.registration == 'Otwarta' %}
+                      Otwarta
+                    {% else %}
+                      Zamknięta
+                    {% endif %}</h5>
 {% if cup.type == 'Puchar' %}
     <h5>Aktualny etap:
                         {% if cup.actual_round == None %}
@@ -30,9 +36,10 @@
 
     </h5>
 {% endif %}
-<hr>
-<br>
-{% if cup.registration == 'Zamknięta' %}
+
+    </div>
+    <div class="col">
+      {% if cup.registration == 'Zamknięta' %}
     {% if rounds|length == 0 %}
         <p class="btn btn-info"> Rejetracja zamknięta</p>
     {% endif %}
@@ -69,6 +76,19 @@
         <p class="btn btn-info">Gramy!</p>
     {% endif %}
 {% endif %}
+    </div>
+    <div class="col">
+                  <a type="submit" class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Lista graczy</a>
+
+                      {% if cup.author == request.user %}
+                  <a type="submit" class="btn btn-secondary" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+                      {% endif %}
+    </div>
+  </div>
+</div>
+
+<br>
+
 
 <br>
 {% if cup.league_generated and cup.type == "1 mecz" or cup.type == "2 mecze" %}
