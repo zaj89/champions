@@ -18,15 +18,19 @@ def cups_list_offline(request, user_id):
     cups = Cup.objects.filter(author_id=user_id, declarations='Ręczna')
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list.html', {'cups': cups,
                                                   'last_cup_online': last_cup_online,
                                                   'last_cup_offline': last_cup_offline,
                                                   'matches_user_to_enter': matches_user_to_enter,
-                                                  'matches_user_to_confirm': matches_user_to_confirm})
+                                                  'matches_user_to_confirm': matches_user_to_confirm,
+                                                  'matches_user_to_waiting': matches_user_to_waiting,
+                                                  'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'cups_list.html', {'cups': cups})
 
@@ -41,15 +45,19 @@ def my_cups_list_online(request, user_id):
     cups = Cup.objects.filter(author_id=user_id).exclude(declarations='Ręczna')
     if request.user.is_authenticated:
         matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list_online_my.html', {'cups': cups,
                                                             'last_cup_online': last_cup_online,
                                                             'last_cup_offline': last_cup_offline,
                                                             'matches_user_to_enter': matches_user_to_enter,
-                                                            'matches_user_to_confirm': matches_user_to_confirm})
+                                                            'matches_user_to_confirm': matches_user_to_confirm,
+                                                            'matches_user_to_waiting': matches_user_to_waiting,
+                                                            'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'cups_list_online_my.html', {'cups': cups})
 
@@ -87,15 +95,19 @@ def cup_new(request):
         cup_form = CupForm()
     if request.user.is_authenticated:
         matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cup_new.html', {'cup_form': cup_form,
                                                 'last_cup_online': last_cup_online,
                                                 'last_cup_offline': last_cup_offline,
                                                 'matches_user_to_enter': matches_user_to_enter,
-                                                'matches_user_to_confirm': matches_user_to_confirm})
+                                                'matches_user_to_confirm': matches_user_to_confirm,
+                                                'matches_user_to_waiting': matches_user_to_waiting,
+                                                'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'cup_new.html', {'cup_form': cup_form})
 
@@ -127,8 +139,10 @@ def dashboard(request, cup_id: int):
     profiles = Profile.objects.filter(user__in=cup.players.all())
     if request.user.is_authenticated:
         matchess = Match.objects.all()
+        matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'dashboard.html', {'cup': cup,
@@ -142,7 +156,9 @@ def dashboard(request, cup_id: int):
                                                   'last_cup_offline': last_cup_offline,
                                                   'match_not_confirmed': match_not_confirmed,
                                                   'matches_user_to_enter': matches_user_to_enter,
-                                                  'matches_user_to_confirm': matches_user_to_confirm})
+                                                  'matches_user_to_confirm': matches_user_to_confirm,
+                                                  'matches_user_to_waiting': matches_user_to_waiting,
+                                                  'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'dashboard.html', {'cup': cup,
                                                   'matches': matches,
@@ -172,8 +188,10 @@ def stats(request, cup_id: int):
     rounds = Round.objects.filter(cup=cup)[::-1]
     if request.user.is_authenticated:
         matchess = Match.objects.all()
+        matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'stats.html', {'cup': cup,
@@ -184,7 +202,9 @@ def stats(request, cup_id: int):
                                               'last_cup_online': last_cup_online,
                                               'last_cup_offline': last_cup_offline,
                                               'matches_user_to_enter': matches_user_to_enter,
-                                              'matches_user_to_confirm': matches_user_to_confirm})
+                                              'matches_user_to_confirm': matches_user_to_confirm,
+                                              'matches_user_to_waiting': matches_user_to_waiting,
+                                              'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'stats.html', {'cup': cup,
                                               'matches': matches,
@@ -222,8 +242,10 @@ def edit_players(request, cup_id: int):
         player_form = PlayerForm()
     if request.user.is_authenticated:
         matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'edit_players.html', {'cup': cup,
@@ -234,7 +256,9 @@ def edit_players(request, cup_id: int):
                                                      'last_cup_online': last_cup_online,
                                                      'last_cup_offline': last_cup_offline,
                                                      'matches_user_to_enter': matches_user_to_enter,
-                                                     'matches_user_to_confirm': matches_user_to_confirm})
+                                                     'matches_user_to_confirm': matches_user_to_confirm,
+                                                     'matches_user_to_waiting': matches_user_to_waiting,
+                                                     'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
@@ -250,8 +274,10 @@ def edit_players_online(request, cup_id: int):
     profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
     if request.user.is_authenticated:
         matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'edit_players.html', {'cup': cup,
@@ -261,7 +287,9 @@ def edit_players_online(request, cup_id: int):
                                                      'last_cup_online': last_cup_online,
                                                      'last_cup_offline': last_cup_offline,
                                                      'matches_user_to_enter': matches_user_to_enter,
-                                                     'matches_user_to_confirm': matches_user_to_confirm})
+                                                     'matches_user_to_confirm': matches_user_to_confirm,
+                                                     'matches_user_to_waiting': matches_user_to_waiting,
+                                                     'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
@@ -713,8 +741,11 @@ def enter_the_result(request, cup_id: int, match_id: int):
                     match_not_played = True
             if request.user.is_authenticated:
                 matchess = Match.objects.all()
+                matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
                 matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
                 matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+                matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(
+                    matches_user_to_waiting)
                 last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
                 last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -724,7 +755,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
                                                                  'last_cup_online': last_cup_online,
                                                                  'last_cup_offline': last_cup_offline,
                                                                  'matches_user_to_enter': matches_user_to_enter,
-                                                                 'matches_user_to_confirm': matches_user_to_confirm
+                                                                 'matches_user_to_confirm': matches_user_to_confirm,
+                                                                 'matches_user_to_waiting': matches_user_to_waiting,
+                                                                 'matches_user_sum': matches_user_sum
                                                                  })
             else:
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -749,8 +782,10 @@ def enter_the_result(request, cup_id: int, match_id: int):
             match_not_played = True
     if request.user.is_authenticated:
         matchess = Match.objects.all()
+        matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'enter_the_result.html', {'cup': cup,
@@ -760,7 +795,9 @@ def enter_the_result(request, cup_id: int, match_id: int):
                                                          'last_cup_online': last_cup_online,
                                                          'last_cup_offline': last_cup_offline,
                                                          'matches_user_to_enter': matches_user_to_enter,
-                                                         'matches_user_to_confirm': matches_user_to_confirm})
+                                                         'matches_user_to_confirm': matches_user_to_confirm,
+                                                         'matches_user_to_waiting': matches_user_to_waiting,
+                                                         'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'enter_the_result.html', {'cup': cup,
                                                          'match': match,
@@ -828,15 +865,19 @@ def cup_list_with_open_registration_online(request):
     cups = Cup.objects.filter(declarations='Otwarta')
     if request.user.is_authenticated:
         matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'cups_list_online_to_join.html', {'cups': cups,
                                                                  'last_cup_online': last_cup_online,
                                                                  'last_cup_offline': last_cup_offline,
                                                                  'matches_user_to_enter': matches_user_to_enter,
-                                                                 'matches_user_to_confirm': matches_user_to_confirm
+                                                                 'matches_user_to_confirm': matches_user_to_confirm,
+                                                                 'matches_user_to_waiting': matches_user_to_waiting,
+                                                                 'matches_user_sum': matches_user_sum
                                                                  })
     else:
         return render(request, 'cups_list_online_to_join.html', {'cups': cups,
@@ -867,15 +908,19 @@ def left_the_cup(request, cup_id):
 def list_matches_to_enter(request):
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'list_matches_to_enter.html', {'matches': matches,
                                                               'last_cup_online': last_cup_online,
                                                               'last_cup_offline': last_cup_offline,
                                                               'matches_user_to_enter': matches_user_to_enter,
-                                                              'matches_user_to_confirm': matches_user_to_confirm
+                                                              'matches_user_to_confirm': matches_user_to_confirm,
+                                                              'matches_user_to_waiting': matches_user_to_waiting,
+                                                              'matches_user_sum': matches_user_sum
                                                               })
     else:
         return render(request, 'list_matches_to_enter.html', {'matches': matches})
@@ -920,8 +965,11 @@ def enter_the_result_home(request, match_id: int):
                     match_not_played = True
             if request.user.is_authenticated:
                 matchess = Match.objects.all()
+                matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
                 matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
                 matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+                matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(
+                    matches_user_to_waiting)
                 last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
                 last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -931,7 +979,9 @@ def enter_the_result_home(request, match_id: int):
                                                                  'last_cup_online': last_cup_online,
                                                                  'last_cup_offline': last_cup_offline,
                                                                  'matches_user_to_enter': matches_user_to_enter,
-                                                                 'matches_user_to_confirm': matches_user_to_confirm
+                                                                 'matches_user_to_confirm': matches_user_to_confirm,
+                                                                 'matches_user_to_waiting': matches_user_to_waiting,
+                                                                 'matches_user_sum': matches_user_sum
                                                                  })
             else:
                 return render(request, 'enter_the_result.html', {'cup': cup,
@@ -956,8 +1006,10 @@ def enter_the_result_home(request, match_id: int):
             match_not_played = True
     if request.user.is_authenticated:
         matchess = Match.objects.all()
+        matches_user_to_waiting = matchess.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matchess.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matchess.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'enter_the_result.html', {'cup': cup,
@@ -967,7 +1019,9 @@ def enter_the_result_home(request, match_id: int):
                                                          'last_cup_online': last_cup_online,
                                                          'last_cup_offline': last_cup_offline,
                                                          'matches_user_to_enter': matches_user_to_enter,
-                                                         'matches_user_to_confirm': matches_user_to_confirm})
+                                                         'matches_user_to_confirm': matches_user_to_confirm,
+                                                         'matches_user_to_waiting': matches_user_to_waiting,
+                                                         'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'enter_the_result.html', {'cup': cup,
                                                          'match': match,
@@ -1052,15 +1106,19 @@ def reject_the_result(request, match_id):
 def list_matches_to_confirm(request):
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'list_matches_to_confirm.html', {'matches': matches,
                                                                 'last_cup_online': last_cup_online,
                                                                 'last_cup_offline': last_cup_offline,
                                                                 'matches_user_to_enter': matches_user_to_enter,
-                                                                'matches_user_to_confirm': matches_user_to_confirm
+                                                                'matches_user_to_confirm': matches_user_to_confirm,
+                                                                'matches_user_to_waiting': matches_user_to_waiting,
+                                                                'matches_user_sum': matches_user_sum
                                                                 })
     else:
         return render(request, 'list_matches_to_confirm.html', {'matches': matches})

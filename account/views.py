@@ -28,6 +28,11 @@ def user_login(request):
     else:
         form = LoginForm()
     if request.user.is_authenticated:
+        matches = Match.objects.all()
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
+        matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
+        matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/login.html', {'form': form,
@@ -62,8 +67,10 @@ def register(request):
 def edit(request):
     profile = Profile.objects.get(user=request.user)
     matches = Match.objects.all()
+    matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
     matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
     matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+    matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
     if request.method =='POST':
         user_form = UserEditForm(instance=request.user, data=request.POST)
         profile_form = ProfileForm(instance=profile, data=request.POST)
@@ -77,7 +84,9 @@ def edit(request):
     return render(request, 'account/edit.html', {'user_form': user_form,
                                                  'profile_form': profile_form,
                                                  'matches_user_to_enter': matches_user_to_enter,
-                                                 'matches_user_to_confirm': matches_user_to_confirm})
+                                                 'matches_user_to_confirm': matches_user_to_confirm,
+                                                 'matches_user_to_waiting': matches_user_to_waiting,
+                                                 'matches_user_sum': matches_user_sum})
 
 
 @login_required
@@ -86,8 +95,10 @@ def profile(request, user_id):
     profile = Profile.objects.get(user=user)
     matches = Match.objects.all()
     if request.user.is_authenticated:
+        matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/profile.html', {'user': user,
@@ -95,6 +106,8 @@ def profile(request, user_id):
                                                         'last_cup_online': last_cup_online,
                                                         'last_cup_offline': last_cup_offline,
                                                         'matches_user_to_enter': matches_user_to_enter,
-                                                        'matches_user_to_confirm': matches_user_to_confirm})
+                                                        'matches_user_to_confirm': matches_user_to_confirm,
+                                                        'matches_user_to_waiting': matches_user_to_waiting,
+                                                        'matches_user_sum': matches_user_sum})
     else:
         return render(request, 'account/profile.html', {'user': user})

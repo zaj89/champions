@@ -34,7 +34,7 @@
                   <ul class="dropdown-menu dropdown-menu-end">
                       {% if last_cup_offline %}
                         <li>
-                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_offline.id %}">Kontynuuj</a>
+                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_offline.id %}">Kontynuuj ({{ last_cup_offline.name|slice:":5" }}...)</a>
                         </li>
                         <li><hr class="dropdown-divider" /></li>
                     {% endif %}
@@ -45,30 +45,38 @@
                <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Online
-                      {% if matches_user_to_enter|length > 0 %}
-                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
-                        {{ matches_user_to_enter|length }}
-                        <span class="visually-hidden">unread messages</span>
-                      </span>
-                      {% endif %}
-                      {% if matches_user_to_confirm|length > 0 %}
-                      <span class="position-absolute top-100 start-100 translate-middle badge rounded-pill bg-success">
-                        {{ matches_user_to_confirm|length }}
-                        <span class="visually-hidden">unread messages</span>
+                      {% if matches_user_to_enter|length > 0 or matches_user_to_confirm|length > 0%}
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ matches_user_sum }}
                       </span>
                       {% endif %}
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                       {% if last_cup_online %}
                       <li>
-                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_online.id %}">Kontynuuj</a>
+                                <a class="dropdown-item" href="{% url 'dashboard' last_cup_online.id %}">Kontynuuj ({{ last_cup_online.name|slice:":5" }}...)</a>
                         </li>
                       <li><hr class="dropdown-divider" /></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_cups_list_online' request.user.id %}">Zarządzaj</a></li>
                     <li><a class="dropdown-item" href="{% url 'cup_list_with_open_registration_online' %}">Panel</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                            <li><a class="dropdown-item" href="{% url 'list_matches_to_enter' %}">Mecze</a></li>
+                            <li><a class="dropdown-item" href="{% url 'list_matches_to_enter' %}">Mecze
+                                {% if matches_user_to_enter|length > 0 %}
+                      <span class="badge rounded-pill bg-primary">
+                        {{ matches_user_to_enter|length }}
+                      </span>
+                      {% endif %}
+                      {% if matches_user_to_waiting|length > 0 %}
+                      <span class="badge rounded-pill bg-secondary">
+                        {{ matches_user_to_waiting|length }}
+                      </span>
+                      {% endif %}
+                      {% if matches_user_to_confirm|length > 0 %}
+                      <span class="badge rounded-pill bg-success">
+                        {{ matches_user_to_confirm|length }}
+                      </span>
+                      {% endif %}</a></li>
                             <li><a class="dropdown-item" href="{% url 'list_matches_to_confirm' %}">Archiwum</a></li>
 
                   </ul>
@@ -107,7 +115,7 @@
                 {% include 'messages.html' %}
                 {% block content %}
                 <h1>System prowadzenia rozgrywek</h1>
-                <p class="lead">Przeprowadź zorganizowane rozgrywki ze znajomymi offline <br>lub zdalnie online za pomocą kont użytkowników</p>
+                <p class="lead">Przeprowadź zorganizowane rozgrywki ze znajomymi offline <br>lub online za pomocą kont użytkowników</p>
                 <center><img src="{% static 'images/skills.gif' %}" width="30%"></center>
                 {% endblock %}
             </div>
