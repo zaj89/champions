@@ -360,9 +360,10 @@ def close_registration(request, cup_id: int):
         for player in players:
             cup.players_order = str(cup.players_order) + str(player.id) + ','
         cup.save()
-        for player in players:
-            profile = Profile.objects.get(user=player.user)
-            ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
+        if cup.declarations != 'Ręczna':
+            for player in players:
+                profile = Profile.objects.get(user=player.user)
+                ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
         messages.success(request, 'Rejestracja została zamknięta.')
         return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
