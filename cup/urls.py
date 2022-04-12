@@ -6,7 +6,7 @@ from .views import cups_list_offline, my_cups_list_online, cup_new, dashboard, e
 
 
 urlpatterns = [
-    path('offline/<int:user_id>/', cups_list_offline, name='cups_list_offline'),
+    path('offline/list', cups_list_offline, name='cups_list_offline'),
     path('online/<int:user_id>/my', my_cups_list_online, name='my_cups_list_online'),
     path('online/cup_list_with_open_registration/', cup_list_with_open_registration_online,
          name='cup_list_with_open_registration_online'),
