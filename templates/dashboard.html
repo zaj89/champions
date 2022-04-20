@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% load crispy_forms_tags %}
+{% load templatetags %}
 
 {% block content %}
 <div class="container">
@@ -16,6 +17,8 @@
 <h5>Rodzaj: {% if cup.type == "Puchar" %}Puchar
             {% elif cup.type == "1 mecz" %}Liga (1 mecz)
             {% elif cup.type == "2 mecze" %}Liga (2 mecze)
+            {% elif cup.type == "GrupyPuchar1mecz" %}Grupy + Puchar (1 mecz)
+            {% elif cup.type == "GrupyPuchar2mecze" %}Grupy + Puchar (2 mecz)
             {% endif %}</h5>
 <h5>Rejestracja: {% if cup.registration == 'Otwarta' %}
                       Otwarta
@@ -24,7 +27,7 @@
                     {% endif %}</h5>
 {% if cup.type == 'Puchar' %}
     <h5>Aktualny etap:
-                        {% if cup.actual_round == None %}
+                        {% if cup.actual_round == None  %}
                             Nie rozpoczęte
                        {% else %}
                             {% if cup.finished %}
@@ -33,6 +36,22 @@
                                 {{ cup.actual_round }}
                             {% endif %}
                           {% endif %}
+                          {% endif %}
+
+    </h5>
+{% if cup.type == 'GrupyPuchar1mecz' %}
+    <h5>Aktualny etap:
+                        {% if not cup.league_generated %}
+                            Nie rozpoczęty
+                        {% elif match_in_groups_not_played %}
+                            Faza grupowa (trwa)
+                        {% elif not match_in_groups_not_played and not cup.cupgenerated %}
+                            Faza grupowa (zakończona)
+                        {% elif not match_in_groups_not_played and cup.cupgenerated and match_in_cup_not_played %}
+                            Faza pucharowa (trwa)
+                        {% elif not match_in_groups_not_played and cup.cupgenerated and not match_in_cup_not_played %}
+                            Zakończony
+                        {% endif %}
 
     </h5>
 {% endif %}
@@ -62,19 +81,31 @@
 
         {% endif %}
 {% endif %}
-{% if cup.registration == 'Zamknięta' and not match_not_played %}
-    {% if cup.author == request.user %}
-        {% if not cup.actual_round.name == "Finał" and cup.type == 'Puchar' %}
+{% if cup.type == 'Ręczna' %}
+        {% if cup.registration == 'Zamknięta' and not match_not_played %}
+            {% if cup.author == request.user %}
+                {% if not cup.actual_round.name == "Finał" and cup.type == 'Puchar' %}
+                    <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj etap</a></p>
+                {% endif %}
+                {% if cup.type == '1 mecz'  or cup.type == '2 mecze' %}
+                    <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj rozgrywki</a></p>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            {% if match_not_played %}
+                <p class="btn btn-info">Gramy!</p>
+            {% endif %}
+        {% endif %}
+{% elif cup.type == 'GrupyPuchar1mecz' %}
+        {% if cup.registration == 'Zamknięta' and not match_in_groups_not_played and not match_in_cup_not_played %}
+    {% if cup.author == request.user and not cup.finished %}
             <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj etap</a></p>
-        {% endif %}
-        {% if cup.type == '1 mecz'  or cup.type == '2 mecze' %}
-            <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj rozgrywki</a></p>
-        {% endif %}
     {% endif %}
 {% else %}
     {% if match_not_played %}
         <p class="btn btn-info">Gramy!</p>
     {% endif %}
+{% endif %}
 {% endif %}
     </div>
     <div class="col">
@@ -166,6 +197,9 @@
         </table>
 <br>
 {% endif %}
+
+{% if cup.type != 'GrupyPuchar1mecz' %}
+
 {% for round in rounds %}
 <h4>{{ round.name }}</h4>
 <hr>
@@ -230,4 +264,230 @@
         </tbody>
         </table>
 {% endfor %}
+
+{% else %}
+{% if cup.cupgenerated %}
+    <h3>Faza pucharowa</h3>
+        {% for round in rounds %}
+    <h4>{{ round.name }}</h4>
+    <hr>
+    <br>
+    <table class="table table-striped table-dark">
+            <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Gospodarz</th>
+              <th scope="col">Rezultat</th>
+              <th scope="col">Gość</th>
+              <th scope="col" colspan="2">Akcja</th>
+            </tr>
+            </thead>
+            <tbody>
+        {% for match in matches %}
+            {% if match.round.name == round.name %}
+            <tr>
+                <th scope="row" width="22.5%"><span></span></th>
+                <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+              <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
+                                                                    {{ match.result1 }} : {{ match.result2 }}
+                                                              {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
+                                                                    Niepotwierdzony ({{ match.result1 }}:{{ match.result2 }})
+                                                              {% else %}
+                                                                    Nie rozegrano
+                                                              {% endif %}</span></td>
+              <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+              <td width="45%">
+                  {% if cup.author == request.user %}
+                            {% if match.finished == False or not match.confirmed %}
+                                {% if cup.declarations != 'Ręczna' %}
+                                   <a class="btn bg-primary" href="{% url 'enter_the_result_home' match.id %}">Wprowadź</a>
+                                {% else %}
+                                   <a class="btn bg-primary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
+                                {% endif %}
+                            {% elif match.finished == True and not match.confirmed %}
+                                   <a class="btn bg-success" href="{% url 'confirm_the_result' match.id %}">Potwierdź</a>
+                                   <a class="btn btn-danger" href="{% url 'delete_the_result_home' match.id %}">Wyczyść</a>
+                            {% else %}
+                            {% if cup.type == "Puchar" %}
+                                {% if cup.actual_round.id == round.id %}
+                                    {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
+                                        <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% elif cup.type == "1 mecz" %}
+                                        <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                            {% elif cup.type == "2 mecze" %}
+                                        <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                            {% endif %}
+                        {% endif %}
+                  {% endif %}
+              </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+            </tbody>
+            </table>
+    {% endfor %}
+{% endif %}
+{% if cup.league_generated %}
+    <h3>Faza grupowa</h3>
+
+    <br>
+    {% for group in groups %}
+    <br>
+    <hr size="5px">
+    <br>
+        <h4>Grupa {{ forloop.counter }}</h4>
+
+            {% if group.league_generated %}
+                <h4>Tabela</h4>
+            <table class="table table-striped table-dark">
+            <thead>
+            <tr>
+              <th width="5%" scope="col">Miejsce</th>
+              <th scope="col">Gracz</th>
+                {% if group.choosing_teams == True %}
+              <th scope="col">Drużyna</th>
+                {% endif %}
+              <th width="5%" scope="col">Z</th>
+              <th width="5%" scope="col">R</th>
+              <th width="5%" scope="col">P</th>
+              <th width="5%" scope="col">BZ</th>
+              <th width="5%" scope="col">BS</th>
+              <th width="5%" scope="col">BB</th>
+              <th width="5%" scope="col">PKT</th>
+            </tr>
+            </thead>
+            <tbody>
+        {% for player in players|in_group:group %}
+            <tr>
+                {% if player.group == group %}
+                <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
+              <td><span class="btn btn-secondary">{{ player.name }}</span></td>
+                        {% if group.choosing_teams == True %}
+                            {% if group.registration == 'Zamknięta' %}
+                                {% for profile in profiles_in_cup.all %}
+                                    {% if profile.user == player %}
+                                        <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% for profile in profiles.all %}
+                                    {% if profile.user == player %}
+                                        <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                            {% if group.registration == 'Zamknięta' %}
+                                {% if group.declarations != 'Ręczna' %}
+                                    {% for profile in profiles_in_cup.all %}
+                                          {% if profile.user == player.user %}
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.goals_scored }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>
+                                          {% endif %}
+                                                {% endfor %}
+                                {% else %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
+                                <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
+                                {% endif %}
+                              {% else %}
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                <th scope="row"><span class="btn btn-secondary">#</span></th>
+                              {% endif %}
+                              {% endif %}
+                {% endfor %}
+            </tbody>
+            </table>
+    <br>
+    {% endif %}
+
+                {% for round in rounds_in_groups %}
+                    {% if group == round.cup %}
+                        <h4>{{ round.name }}</h4>
+                        <hr>
+                        <br>
+                        {% if round.pausing %}
+                        <p>Pauzuje: {{ round.pausing.name }}</p>
+                        <br>
+                        {% endif %}
+                        <table class="table table-striped table-dark">
+                                <thead>
+                                <tr>
+                                  <th scope="col"></th>
+                                  <th scope="col">Gospodarz</th>
+                                  <th scope="col">Rezultat</th>
+                                  <th scope="col">Gość</th>
+                                  <th scope="col" colspan="2">Akcja</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                        {% endif %}
+                    {% for match in matches_in_groups %}
+                        {% if match.round == round and group == match.cup %}
+                        <tr>
+                            <th scope="row" width="22.5%"><span></span></th>
+                            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+                          <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
+                                                                                {{ match.result1 }} : {{ match.result2 }}
+                                                                          {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
+                                                                                Niepotwierdzony ({{ match.result1 }}:{{ match.result2 }})
+                                                                          {% else %}
+                                                                                Nie rozegrano
+                                                                          {% endif %}</span></td>
+                          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+                          <td width="45%">
+                              {% if cup.author == request.user %}
+                                        {% if match.finished == False or not match.confirmed %}
+                                            {% if cup.declarations != 'Ręczna' %}
+                                               <a class="btn bg-primary" href="{% url 'enter_the_result_home' match.id %}">Wprowadź</a>
+                                            {% else %}
+                                               <a class="btn bg-primary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
+                                            {% endif %}
+                                        {% elif match.finished == True and not match.confirmed %}
+                                               <a class="btn bg-success" href="{% url 'confirm_the_result' match.id %}">Potwierdź</a>
+                                               <a class="btn btn-danger" href="{% url 'delete_the_result_home' match.id %}">Wyczyść</a>
+                                        {% else %}
+                                        {% if cup.type == "Puchar" %}
+                                            {% if cup.actual_round.id == round.id %}
+                                                {% if cup.len_rounds != rounds|length and cup.actual_round.name != 'Finał' %}
+                                                    <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% elif cup.type == "1 mecz" %}
+                                                    <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                        {% elif cup.type == "2 mecze" %}
+                                                    <a class="btn btn-danger" href="{% url 'delete_the_result' cup.id match.id %}">Wyczyść</a>
+                                        {% endif %}
+                                    {% endif %}
+                              {% endif %}
+                          </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                        </tbody>
+                        </table>
+                {% endfor %}
+
+    {% endfor %}
+
+
+    {% endif %}
+{% endif %}
+
 {% endblock %}

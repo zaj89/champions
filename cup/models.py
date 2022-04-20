@@ -20,6 +20,7 @@ class Player(models.Model):
     goals_bilans = models.SmallIntegerField(verbose_name='Bilans bramek', default=0)
     points = models.SmallIntegerField(verbose_name='Punkty', default=0)
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup', default='')
+    group = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='group', default='', null=True)
     team = models.CharField(max_length=30, blank=True, verbose_name='Drużyna', default='', null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True)
 
@@ -68,12 +69,13 @@ class Cup(models.Model):
                                default=None, null=True)
     types = (
         ('Puchar', (
-            ('Puchar', 'Puchar'),
-            #            ('Grupy + Puchar', 'Grupy + Puchar'),
+            ('Puchar', 'Puchar (min. 4 graczy)'),
+            ('GrupyPuchar1mecz', 'Grupy (1 mecz) + Puchar (min. 8 graczy)'),
+            ('GrupyPuchar2mecze', 'Grupy (2 mecze) + Puchar (min. 8 graczy)'),
         )),
         ('Liga', (
-            ('1 mecz', '1 mecz'),
-            ('2 mecze', '2 mecze'),
+            ('1 mecz', '1 mecz (min. 4 graczy)'),
+            ('2 mecze', '2 mecze (min. 4 graczy)'),
         )),
     )
     type = models.CharField(max_length=20, choices=types, default=types[0][0],
@@ -106,6 +108,10 @@ class Cup(models.Model):
     declarations = models.CharField(max_length=20, choices=declarations_status, default=declarations_status[0][0],
                                     verbose_name='Rejestracja')
     players = models.ManyToManyField(User, related_name='players')
+    groupanothercup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='group_cups', default=None,
+                                        null=True)
+    promotion = models.ManyToManyField(Player, related_name='promotion_group', verbose_name='Awans', blank=True)
+    cupgenerated = models.BooleanField(verbose_name='Wygenerowano puchar', default=False)
 
     def clean(self):
         if len(str(self.name)) > 50:

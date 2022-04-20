@@ -1,5 +1,6 @@
 import random
 from random import shuffle
+#import pywhatkit
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
@@ -95,6 +96,8 @@ def cup_new(request):
                 new_cup.author = request.user
             new_cup.save()
             messages.success(request, "Rozgrywki zostały utworzone.")
+            profile = Profile.objects.get(user=request.user)
+            #pywhatkit.sendwhatmsg(str(profile.phone), f'Utworzyłeś rozgrywki {new_cup.name}.', 14, 23)
             return HttpResponseRedirect('/cup/dashboard/{}/edit_players'.format(new_cup.id))
     else:
         cup_form = CupForm()
@@ -126,6 +129,29 @@ def dashboard(request, cup_id: int):
     :return: A rendered template of dashboard.html
     """
     cup = Cup.objects.get(id=cup_id)
+    matches_in_cup = Match.objects.filter(cup=cup)
+    if cup.type == 'GrupyPuchar1mecz':
+        groups = Cup.objects.filter(groupanothercup=cup)
+        rounds_in_groups = Round.objects.filter(cup__groupanothercup=cup)
+        matches_in_groups = Match.objects.filter(cup__groupanothercup=cup)
+        matches_in_cup = Match.objects.filter(cup=cup)
+        match_in_groups_not_played = False
+        for match in list(matches_in_groups):
+            if match.finished:
+                pass
+            else:
+                match_in_groups_not_played = True
+        match_in_cup_not_played = False
+        for match in list(matches_in_cup):
+            if match.finished:
+                pass
+            else:
+                match_in_cup_not_played = True
+    else:
+        groups = None
+        rounds_in_groups = None
+        matches_in_groups = None
+        match_in_groups_not_played = None
     matches = Match.objects.filter(cup=cup)
     match_not_played = False
     for match in list(matches):
@@ -139,7 +165,7 @@ def dashboard(request, cup_id: int):
             pass
         else:
             match_not_played = True
-    rounds = Round.objects.filter(cup=cup).order_by('match', 'id')
+    rounds = Round.objects.filter(cup=cup).order_by('match', '-id')
     players = Player.objects.filter(cup=cup).order_by('-points')
     profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
     profiles = Profile.objects.filter(user__in=cup.players.all())
@@ -153,7 +179,13 @@ def dashboard(request, cup_id: int):
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'dashboard.html', {'cup': cup,
                                                   'matches': matches,
+                                                  'groups': groups,
+                                                  'matches_in_groups': matches_in_groups,
+                                                  'matches_in_cup': matches_in_cup,
+                                                  'rounds_in_groups': rounds_in_groups,
                                                   'match_not_played': match_not_played,
+                                                  'match_in_groups_not_played': match_in_groups_not_played,
+                                                  'match_in_cup_not_played': match_in_cup_not_played,
                                                   'rounds': rounds,
                                                   'players': players,
                                                   'profiles': profiles,
@@ -168,7 +200,12 @@ def dashboard(request, cup_id: int):
     else:
         return render(request, 'dashboard.html', {'cup': cup,
                                                   'matches': matches,
+                                                  'groups': groups,
+                                                  'matches_in_groups': matches_in_groups,
+                                                  'matches_in_cup': matches_in_cup,
                                                   'match_not_played': match_not_played,
+                                                  'match_in_groups_not_played': match_in_groups_not_played,
+                                                  'match_in_cup_not_played': match_in_cup_not_played,
                                                   'rounds': rounds,
                                                   'players': players,
                                                   'profiles': profiles,
@@ -373,14 +410,25 @@ def close_registration(request, cup_id: int):
             cup.len_rounds = len_rounds
             cup.registration = 'Zamknięta'
             cup.save()
-            for player in players:
-                profile = Profile.objects.get(user=player.user)
-                ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
             messages.success(request, 'Rejestracja została zamknięta.')
             return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
-        elif cup.type == 'Grupy + Puchar':
-            pass
+        elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze':
+            players = list(Player.objects.filter(cup=cup))
+            shuffle(players)
+            cup.registration = 'Zamknięta'
+            len_players = 0
+            for player in players:
+                len_players += 1
+                cup.players_order = str(cup.players_order) + str(player.id) + ','
+            if len_players % 2 == 0:
+                pass
+            else:
+                cup.players_order = cup.players_order + "pausing,"
+            cup.save()
+
+            messages.success(request, 'Rejestracja została zamknięta.')
+            return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
         elif cup.type == '1 mecz':
             players = list(Player.objects.filter(cup=cup))
             shuffle(players)
@@ -687,6 +735,219 @@ def generate_round(request, cup_id: int):
         cup.save()
         messages.success(request, 'Rozgrywki wygenerowane.')
         return HttpResponseRedirect('/cup/dashboard/{}/'.format(cup.id))
+    elif cup.type == 'GrupyPuchar1mecz':
+        if not cup.league_generated:
+            players = list(Player.objects.filter(cup=cup))
+            if len(players) > 128:
+                len_group = 32
+            elif len(players) > 64:
+                len_group = 16
+            elif len(players) > 32:
+                len_group = 8
+            elif len(players) > 16:
+                len_group = 4
+            elif len(players) > 8:
+                len_group = 2
+            else:
+                len_group = 2
+            ordering = list(cup.players_order[:-1].split(','))
+            if 'pausing' in ordering:
+                ordering.remove('pausing')
+            print(ordering)
+            print('lengroup' + str(len_group))
+            ordering_in_groups = [[] for _ in range(len_group)]
+            print(ordering_in_groups)
+            len_while = 1
+            while ordering:
+                print(ordering)
+                if len_while <= len_group:
+                    ordering_in_groups[len_while - 1].append(ordering.pop(0))
+                    len_while += 1
+                    print(ordering_in_groups)
+                else:
+                    len_while = 1
+            for index, group in enumerate(ordering_in_groups):
+                if len(group) % 2 != 0:
+                    ordering_in_groups[index].append('pausing')
+            for nr_group in range(len_group + 1)[1:]:
+                print(nr_group)
+                if len(ordering_in_groups[nr_group - 1]) % 2 == 0:
+                    all_rounds = len(ordering_in_groups[nr_group - 1])
+                else:
+                    all_rounds = len(ordering_in_groups[nr_group - 1]) + 1
+                print("all_rounds " + str(all_rounds))
+                players = []
+                print(ordering_in_groups)
+                ordering_to_group = ''
+                for pl_id in ordering_in_groups[nr_group - 1]:
+                    ordering_to_group += pl_id + ','
+                ordering_to_group = list(ordering_to_group[:-1].split(','))
+                new_group = Cup.objects.create(type='1 mecz', name=str(str(nr_group) + '_grupa_' + cup.name),
+                                               author=request.user,
+                                               choosing_teams=cup.choosing_teams, online=cup.online,
+                                               declarations=cup.declarations, groupanothercup=cup,
+                                               players_order=ordering_to_group, league_generated=True,
+                                               registration=cup.registration)
+                for player_id in ordering_in_groups[nr_group - 1]:
+                    if player_id:
+                        if player_id != 'pausing':
+                            player_to_add = Player.objects.get(id=player_id)
+                            player_to_add.group = new_group
+                            player_to_add.save()
+                            players.append(player_to_add)
+                        else:
+                            players.append('pausing')
+                    else:
+                        continue
+                for round_nr in range(all_rounds)[1:]:
+                    actual_round = []
+                    if round_nr == 1:
+                        new_round = Round.objects.create(cup=new_group, name=f'Kolejka {round_nr}')
+                        for match in range(len(players) // 2):
+                            if players[0] == 'pausing':
+                                pausing = players.pop(-1)
+                                new_round.pausing = pausing
+                                new_round.save()
+                                players.remove(players[0])
+                                players.remove(pausing)
+                            elif players[-1] == 'pausing':
+                                pausing = players[0]
+                                new_round.pausing = pausing
+                                new_round.save()
+                                players.remove(pausing)
+                                players.remove(players[-1])
+                            else:
+                                pl1 = players.pop(0)
+                                pl2 = players.pop(-1)
+                                actual_round.append([pl1, pl2])
+                        for match in actual_round:
+                            if round_nr % 2 == 0:
+                                Match.objects.create(player1=match[0],
+                                                     player2=match[1],
+                                                     cup=new_group,
+                                                     round=new_round)
+                            else:
+                                Match.objects.create(player1=match[1],
+                                                     player2=match[0],
+                                                     cup=new_group,
+                                                     round=new_round)
+                        new_round.league_generated = True
+                        new_round.save()
+                    else:
+                        players = []
+                        new_ordering = [ordering_to_group[0], ordering_to_group[-1]]
+                        for player in ordering_to_group[1:-1]:
+                            new_ordering.append(player)
+                        ordering_to_group = new_ordering
+                        for player_id in ordering_to_group:
+                            if player_id != 'pausing':
+                                player_to_add = Player.objects.get(id=player_id)
+                                player_to_add.group = new_group
+                                player_to_add.save()
+                                players.append(player_to_add)
+                            else:
+                                players.append('pausing')
+                        new_round = Round.objects.create(cup=new_group, name=f'Kolejka {round_nr}')
+                        for match in range(len(players) // 2):
+                            if players[0] == 'pausing':
+                                pausing = players.pop(-1)
+                                players.remove(players[0])
+                                new_round.pausing = pausing
+                                new_round.save()
+                            elif players[-1] == 'pausing':
+                                pausing = players.pop(0)
+                                players.remove(players[-1])
+                                new_round.pausing = pausing
+                                new_round.save()
+                            else:
+                                actual_round.append([players.pop(0), players.pop(-1)])
+                        for match in actual_round:
+                            if round_nr % 2 == 0:
+                                Match.objects.create(player1=match[0],
+                                                     player2=match[1],
+                                                     cup=new_group,
+                                                     round=new_round)
+                            else:
+                                Match.objects.create(player1=match[1],
+                                                     player2=match[0],
+                                                     cup=new_group,
+                                                     round=new_round)
+                        new_round.league_generated = True
+                        new_round.save()
+            cup.len_rounds = all_rounds
+            cup.league_generated = True
+            cup.save()
+            messages.success(request, 'Faza grupowa wygenerowana.')
+            return HttpResponseRedirect('/cup/dashboard/{}/'.format(cup.id))
+        else:
+            if not cup.cupgenerated:
+                groups = Cup.objects.filter(groupanothercup=cup)
+                cup = Cup.objects.get(id=cup_id)
+                for group in groups:
+                    players = Player.objects.filter(group=group).order_by('-points')[:2]
+                    for player in players:
+                        group.promotion.add(player)
+                        group.save()
+                        cup.promotion.add(player)
+                        cup.save()
+                cup.cupgenerated = True
+            players = list(cup.promotion.all())
+            print(players)
+            shuffle(players)
+            len_players = 0
+            cup.save()
+            new_round = Round.objects.create(cup=cup)
+            match_not_played = False
+            for match in list(matches):
+                if match.finished:
+                    pass
+                else:
+                    match_not_played = True
+            if match_not_played:
+                messages.error(request, 'Nie rozegrano wszystkich meczy. Wprowadź wszystkie wyniki.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+            else:
+                if cup.actual_round is not None:
+                    finished_round = Round.objects.get(id=cup.actual_round.id)
+                    for player_prom in list(finished_round.promotion.all()):
+                        new_round.players.add(player_prom)
+                if cup.actual_round:
+                    players = list(cup.actual_round.promotion.all())
+                if len(players) == 2:
+                    new_round.name = 'Finał'
+                elif len(players) == 4:
+                    new_round.name = 'Półfinał'
+                elif len(players) == 8:
+                    new_round.name = 'Ćwierćfinał'
+                elif len(players) == 16:
+                    new_round.name = '1/8 Finału'
+                elif len(players) == 32:
+                    new_round.name = '1/16 Finału'
+                elif len(players) == 64:
+                    new_round.name = '1/32 Finału'
+                elif len(players) == 128:
+                    new_round.name = '1/64 Finału'
+                for new_match in range(len(players) // 2):
+                    player1 = random.choice(players)
+                    players.remove(player1)
+                    player2 = random.choice(players)
+                    players.remove(player2)
+                    match = Match.objects.create(player1=player1, player2=player2, cup=cup, round=new_round)
+                    new_round.players.add(match.player1)
+                    new_round.players.add(match.player2)
+                new_round.save()
+
+                cup.actual_round = new_round
+                cup.save()
+                messages.success(request, f'Wygenerowano {cup.actual_round}.')
+                return HttpResponseRedirect('/cup/dashboard/{}/'.format(cup.id))
+        # if (len(players) // 4) % 2 == 0:
+        #     len_group = len(players) // 4
+        # else:
+        #     len_group = len(players) // 4 + 1
+        # for nr_group in range(len_group + 1)[1:]:
+        #     Cup.objects.create(type='1 mecz', name=str(nr_group), author=request.user, choosing_teams=cup.choosing_teams,
+        #                        online=cup.online, declarations=cup.declarations, group_another_cup=cup)
 
 
 @login_required
@@ -708,19 +969,24 @@ def enter_the_result(request, cup_id: int, match_id: int):
             match_form = MatchLeagueForm(data=request.POST or None, instance=instance)
         elif cup.type == '2 mecze':
             match_form = MatchLeagueForm(data=request.POST or None, instance=instance)
+        elif cup.type == 'GrupyPuchar1mecz':
+            if cup.cupgenerated:
+                match_form = MatchCupForm(data=request.POST or None, instance=instance)
+            else:
+                match_form = MatchLeagueForm(data=request.POST or None, instance=instance)
         if match_form.is_valid():
             match_result = match_form.save(commit=False)
             match_result.finished = True
             match_result.confirmed = True
-            if cup.type == 'Puchar':
-                if match_result.result1 > match_result.result2:
-                    actual_round.promotion.add(match_result.player1)
-                    actual_round.save()
-                else:
-                    actual_round.promotion.add(match_result.player2)
-                    actual_round.save()
             player1 = match_result.player1
             player2 = match_result.player2
+            if cup.type == 'Puchar' or cup.cupgenerated:
+                if match_result.result1 > match_result.result2:
+                    actual_round.promotion.add(player1)
+                    actual_round.save()
+                else:
+                    actual_round.promotion.add(player2)
+                    actual_round.save()
             player1.goals_scored += match_result.result1
             player2.goals_scored += match_result.result2
             player2.goals_losted += match_result.result1
@@ -745,7 +1011,7 @@ def enter_the_result(request, cup_id: int, match_id: int):
             player1.save()
             player2.save()
             match_result.save()
-            if cup.type == "Puchar":
+            if cup.type == "Puchar" or cup.type == "GrupyPuchar1mecz":
                 if cup.actual_round.name == 'Finał':
                     cup.finished = True
                     cup.save()
@@ -795,6 +1061,8 @@ def enter_the_result(request, cup_id: int, match_id: int):
         elif cup.type == "1 mecz":
             match_form = MatchLeagueForm()
         elif cup.type == "2 mecze":
+            match_form = MatchLeagueForm()
+        elif cup.type == 'GrupyPuchar1mecz':
             match_form = MatchLeagueForm()
     match = Match.objects.get(id=match_id)
     matches = Match.objects.filter(cup=cup)

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 
+
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(label='Hasło', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Powtórz hasło', widget=forms.PasswordInput)
@@ -31,4 +32,4 @@ class UserEditForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('team',)
+        fields = ('team', 'phone',)

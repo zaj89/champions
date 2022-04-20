@@ -10,7 +10,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    list_display = ('player1', 'player2', 'result1', 'result2', 'round')
+    list_display = ('player1', 'player2', 'result1', 'result2', 'round', 'cup',)
 
 
 @admin.register(Cup)

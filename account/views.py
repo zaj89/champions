@@ -37,7 +37,11 @@ def user_login(request):
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/login.html', {'form': form,
                                                       'last_cup_online': last_cup_online,
-                                                      'last_cup_offline': last_cup_offline
+                                                      'last_cup_offline': last_cup_offline,
+                                                      'matches_user_to_enter': matches_user_to_enter,
+                                                      'matches_user_to_confirm': matches_user_to_confirm,
+                                                      'matches_user_to_waiting': matches_user_to_waiting,
+                                                      'matches_user_sum': matches_user_sum
                                                       })
     else:
         return render(request, 'account/login.html', {'form': form})
@@ -56,6 +60,8 @@ def register(request):
             new_profile.save()
             messages.success(request, 'Konto zostało utworzone. Możesz się zalogować.')
             return HttpResponseRedirect('/account/login/')
+        messages.success(request, 'Błąd w formularzu..')
+        return HttpResponseRedirect('/account/login/')
     else:
         user_form = UserRegistrationForm()
         profile_form = ProfileForm()
