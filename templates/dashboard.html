@@ -39,7 +39,7 @@
                           {% endif %}
 
     </h5>
-{% if cup.type == 'GrupyPuchar1mecz' %}
+{% if cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' %}
     <h5>Aktualny etap:
                         {% if not cup.league_generated %}
                             Nie rozpoczęty
@@ -96,7 +96,7 @@
                 <p class="btn btn-info">Gramy!</p>
             {% endif %}
         {% endif %}
-{% elif cup.type == 'GrupyPuchar1mecz' %}
+{% elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' %}
         {% if cup.registration == 'Zamknięta' and not match_in_groups_not_played and not match_in_cup_not_played %}
     {% if cup.author == request.user and not cup.finished %}
             <p><a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj etap</a></p>
@@ -198,7 +198,7 @@
 <br>
 {% endif %}
 
-{% if cup.type != 'GrupyPuchar1mecz' %}
+{% if cup.type != 'GrupyPuchar1mecz' and cup.type != 'GrupyPuchar2mecze' %}
 
 {% for round in rounds %}
 <h4>{{ round.name }}</h4>
