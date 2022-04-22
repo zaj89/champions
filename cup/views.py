@@ -165,7 +165,10 @@ def dashboard(request, cup_id: int):
             pass
         else:
             match_not_played = True
-    rounds = Round.objects.filter(cup=cup).order_by('match', '-id')
+    if cup.type == 'Puchar' or cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze':
+        rounds = Round.objects.filter(cup=cup).order_by('match', '-id')
+    else:
+        rounds = Round.objects.filter(cup=cup).order_by('match', 'id')
     players = Player.objects.filter(cup=cup).order_by('-points')
     profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
     profiles = Profile.objects.filter(user__in=cup.players.all())
@@ -378,89 +381,182 @@ def close_registration(request, cup_id: int):
     """
     cup = Cup.objects.get(id=cup_id)
     if cup.registration == "Otwarta":
-        if cup.type == 'Puchar':
-            players = list(Player.objects.filter(cup=cup))
-            if len(players) == 4:
-                len_rounds = 2
-            elif 4 < len(players) < 8:
-                len_rounds = 2
-                cup.elimination_matches = len(players) - 4
-            elif len(players) == 8:
-                len_rounds = 3
-            elif 8 < len(players) < 16:
-                len_rounds = 3
-                cup.elimination_matches = len(players) - 8
-            elif len(players) == 16:
-                len_rounds = 4
-            elif 16 < len(players) < 32:
-                len_rounds = 5
-                cup.elimination_matches = len(players) - 16
-            elif len(players) == 32:
-                len_rounds = 5
-            elif 32 < len(players) < 64:
-                len_rounds = 6
-                cup.elimination_matches = len(players) - 32
-            elif len(players) == 64:
-                len_rounds = 6
-            elif 64 < len(players) < 120:
-                len_rounds = 7
-                cup.elimination_matches = len(players) - 64
-            else:
-                len_rounds = 7
-            cup.len_rounds = len_rounds
-            cup.registration = 'Zamknięta'
-            cup.save()
-            messages.success(request, 'Rejestracja została zamknięta.')
-            return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+        if cup.declarations == 'Otwarta':
+            if cup.type == 'Puchar':
+                players = list(Player.objects.filter(cup=cup))
+                if len(players) == 4:
+                    len_rounds = 2
+                elif 4 < len(players) < 8:
+                    len_rounds = 2
+                    cup.elimination_matches = len(players) - 4
+                elif len(players) == 8:
+                    len_rounds = 3
+                elif 8 < len(players) < 16:
+                    len_rounds = 3
+                    cup.elimination_matches = len(players) - 8
+                elif len(players) == 16:
+                    len_rounds = 4
+                elif 16 < len(players) < 32:
+                    len_rounds = 5
+                    cup.elimination_matches = len(players) - 16
+                elif len(players) == 32:
+                    len_rounds = 5
+                elif 32 < len(players) < 64:
+                    len_rounds = 6
+                    cup.elimination_matches = len(players) - 32
+                elif len(players) == 64:
+                    len_rounds = 6
+                elif 64 < len(players) < 120:
+                    len_rounds = 7
+                    cup.elimination_matches = len(players) - 64
+                else:
+                    len_rounds = 7
+                cup.len_rounds = len_rounds
+                cup.registration = 'Zamknięta'
+                cup.save()
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
 
-        elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze':
-            players = list(Player.objects.filter(cup=cup))
-            shuffle(players)
-            cup.registration = 'Zamknięta'
-            len_players = 0
-            for player in players:
-                len_players += 1
-                cup.players_order = str(cup.players_order) + str(player.id) + ','
-            if len_players % 2 == 0:
-                pass
-            else:
-                cup.players_order = cup.players_order + "pausing,"
-            cup.save()
+            elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                len_players = 0
+                for player in players:
+                    len_players += 1
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                if len_players % 2 == 0:
+                    pass
+                else:
+                    cup.players_order = cup.players_order + "pausing,"
+                cup.save()
 
-            messages.success(request, 'Rejestracja została zamknięta.')
-            return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
-        elif cup.type == '1 mecz':
-            players = list(Player.objects.filter(cup=cup))
-            shuffle(players)
-            cup.registration = 'Zamknięta'
-            len_players = 0
-            for player in players:
-                len_players += 1
-                cup.players_order = str(cup.players_order) + str(player.id) + ','
-            if len_players % 2 == 0:
-                pass
-            else:
-                cup.players_order = cup.players_order + "pausing,"
-            cup.save()
-            for player in players:
-                profile = Profile.objects.get(user=player.user)
-                ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
-            messages.success(request, 'Rejestracja została zamknięta.')
-            return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
-
-        elif cup.type == '2 mecze':
-            players = list(Player.objects.filter(cup=cup))
-            shuffle(players)
-            cup.registration = 'Zamknięta'
-            for player in players:
-                cup.players_order = str(cup.players_order) + str(player.id) + ','
-            cup.save()
-            if cup.declarations != 'Ręczna':
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+            elif cup.type == '1 mecz':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                len_players = 0
+                for player in players:
+                    len_players += 1
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                if len_players % 2 == 0:
+                    pass
+                else:
+                    cup.players_order = cup.players_order + "pausing,"
+                cup.save()
                 for player in players:
                     profile = Profile.objects.get(user=player.user)
                     ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
-            messages.success(request, 'Rejestracja została zamknięta.')
-            return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+
+            elif cup.type == '2 mecze':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                for player in players:
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                cup.save()
+                if cup.declarations != 'Ręczna':
+                    for player in players:
+                        profile = Profile.objects.get(user=player.user)
+                        ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+        elif cup.declarations == 'Ręczna':
+            if cup.type == 'Puchar':
+                players = list(Player.objects.filter(cup=cup))
+                if len(players) == 4:
+                    len_rounds = 2
+                elif 4 < len(players) < 8:
+                    len_rounds = 2
+                    cup.elimination_matches = len(players) - 4
+                elif len(players) == 8:
+                    len_rounds = 3
+                elif 8 < len(players) < 16:
+                    len_rounds = 3
+                    cup.elimination_matches = len(players) - 8
+                elif len(players) == 16:
+                    len_rounds = 4
+                elif 16 < len(players) < 32:
+                    len_rounds = 5
+                    cup.elimination_matches = len(players) - 16
+                elif len(players) == 32:
+                    len_rounds = 5
+                elif 32 < len(players) < 64:
+                    len_rounds = 6
+                    cup.elimination_matches = len(players) - 32
+                elif len(players) == 64:
+                    len_rounds = 6
+                elif 64 < len(players) < 120:
+                    len_rounds = 7
+                    cup.elimination_matches = len(players) - 64
+                else:
+                    len_rounds = 7
+                cup.len_rounds = len_rounds
+                cup.registration = 'Zamknięta'
+                cup.save()
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+            elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                len_players = 0
+                for player in players:
+                    len_players += 1
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                if len_players % 2 == 0:
+                    pass
+                else:
+                    cup.players_order = cup.players_order + "pausing,"
+                cup.save()
+
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+            elif cup.type == '1 mecz':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                len_players = 0
+                for player in players:
+                    len_players += 1
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                if len_players % 2 == 0:
+                    pass
+                else:
+                    cup.players_order = cup.players_order + "pausing,"
+                cup.save()
+                if cup.declarations != 'Ręczna':
+                    for player in players:
+                        profile = Profile.objects.get(user=player.user)
+                        ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+
+            elif cup.type == '2 mecze':
+                players = list(Player.objects.filter(cup=cup))
+                shuffle(players)
+                cup.registration = 'Zamknięta'
+                len_players = 0
+                for player in players:
+                    len_players += 1
+                    cup.players_order = str(cup.players_order) + str(player.id) + ','
+                if len_players % 2 == 0:
+                    pass
+                else:
+                    cup.players_order = cup.players_order + "pausing,"
+                cup.save()
+                if cup.declarations != 'Ręczna':
+                    for player in players:
+                        profile = Profile.objects.get(user=player.user)
+                        ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
+                messages.success(request, 'Rejestracja została zamknięta.')
+                return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+        elif cup.declarations == 'Na zaproszenie':
+            pass
     else:
         messages.error(request, 'Rejestracja już jest zamknięta.')
         return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
@@ -564,12 +660,10 @@ def generate_round(request, cup_id: int):
                         new_round.pausing = pausing
                         new_round.save()
                         players.remove(players[0])
-                        players.remove(pausing)
                     elif players[-1] == 'pausing':
-                        pausing = players[0]
+                        pausing = players.pop(0)
                         new_round.pausing = pausing
                         new_round.save()
-                        players.remove(pausing)
                         players.remove(players[-1])
                     else:
                         actual_round.append([players.pop(0), players.pop(-1)])
@@ -637,6 +731,7 @@ def generate_round(request, cup_id: int):
                 players.append(Player.objects.get(id=player_id))
             else:
                 players.append('pausing')
+        print(players)
         for round_nr in range(all_rounds)[1:]:
             actual_round = []
             if round_nr == 1:
@@ -650,14 +745,12 @@ def generate_round(request, cup_id: int):
                         new_round2.pausing = pausing
                         new_round2.save()
                         players.remove(players[0])
-                        players.remove(pausing)
                     elif players[-1] == 'pausing':
-                        pausing = players[0]
+                        pausing = players.pop(0)
                         new_round.pausing = pausing
                         new_round.save()
                         new_round2.pausing = pausing
                         new_round2.save()
-                        players.remove(pausing)
                         players.remove(players[-1])
                     else:
                         actual_round.append([players.pop(0), players.pop(-1)])
@@ -809,12 +902,10 @@ def generate_round(request, cup_id: int):
                                 new_round.pausing = pausing
                                 new_round.save()
                                 players.remove(players[0])
-                                players.remove(pausing)
                             elif players[-1] == 'pausing':
-                                pausing = players[0]
+                                pausing = players.pop(0)
                                 new_round.pausing = pausing
                                 new_round.save()
-                                players.remove(pausing)
                                 players.remove(players[-1])
                             else:
                                 pl1 = players.pop(0)
@@ -1019,10 +1110,9 @@ def generate_round(request, cup_id: int):
                                 players.remove(players[0])
                                 players.remove(pausing)
                             elif players[-1] == 'pausing':
-                                pausing = players[0]
+                                pausing = players.pop(0)
                                 new_round.pausing = pausing
                                 new_round.save()
-                                players.remove(pausing)
                                 players.remove(players[-1])
                             else:
                                 pl1 = players.pop(0)
@@ -1237,9 +1327,10 @@ def enter_the_result(request, cup_id: int, match_id: int):
             player2.save()
             match_result.save()
             if cup.type == "Puchar" or cup.type == "GrupyPuchar1mecz":
-                if cup.actual_round.name == 'Finał':
-                    cup.finished = True
-                    cup.save()
+                if cup.actual_round:
+                    if cup.actual_round.name == 'Finał':
+                        cup.finished = True
+                        cup.save()
             messages.success(request, f'Wprowadzono wynik: '
                                       f'{match_result.player1}[{match_result.result1}] '
                                       f'vs '
