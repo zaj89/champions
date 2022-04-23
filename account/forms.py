@@ -23,6 +23,10 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
+class SearchUserForm(forms.Form):
+    username = forms.CharField()
+
+
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User

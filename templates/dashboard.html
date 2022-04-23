@@ -231,13 +231,9 @@
           <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
           <td width="45%">
               {% if cup.author == request.user %}
-                        {% if match.finished == False or not match.confirmed %}
-                            {% if cup.declarations != 'Ręczna' %}
-                               <a class="btn bg-primary" href="{% url 'enter_the_result_home' match.id %}">Wprowadź</a>
-                            {% else %}
+                        {% if not match.finished or not match.confirmed %}
                                <a class="btn bg-primary" href="{% url 'enter_the_result' cup.id match.id %}">Wprowadź</a>
-                            {% endif %}
-                        {% elif match.finished == True and not match.confirmed %}
+                        {% elif match.finished and not match.confirmed %}
                                <a class="btn bg-success" href="{% url 'confirm_the_result' match.id %}">Potwierdź</a>
                                <a class="btn btn-danger" href="{% url 'delete_the_result_home' match.id %}">Wyczyść</a>
                         {% else %}

@@ -166,5 +166,157 @@
         <p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
         {% endif %}
 {% elif cup.declarations == 'Na zaproszenie' %}
+    {% if cup.registration == 'Otwarta' %}
+        <p>Rejerstracja: Otwarta</p>
+    {% else %}
+        <p>Rejestracja: Zamknięta</p>
+    {% endif %}
+
+    {% if cup.registration == 'Otwarta' and cup.author == request.user %}
+        <h4>Wyszukaj gracza:</h4>
+<center>
+            <div class="col-md-4 mb-3">
+                <form class="form-inline my-2 my-lg-0" action="{% url 'edit_players_online' cup.id %}">
+                    <input class="form-control mx-sm-3" type="search" placeholder="Wpisz nazwę użytkownika lub imię" aria-label="Search" name="search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Wyszukaj</button>
+                </form>
+            </div>
+</center>
+
+{% if players_search %}
+<h4>Wyszukani gracze:</h4>
+
+    <table class="table table-striped table-dark">
+                <thead>
+                <tr>
+                  <th width="30%" scope="col">Nazwa</th>
+                    {% if cup.choosing_teams == True %}
+                  <th width="30%" scope="col">Drużyna</th>
+                    {% endif %}
+                  <th scope="col">Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+            {% for player in players_search %}
+                <tr>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.first_name }}</span></th>
+
+                          <td>
+                      {% if cup.registration == 'Otwarta' and request.user == cup.author %}
+                            <a type="submit" class="btn btn-secondary" href="{% url 'send_invite' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Zaproś</a>
+                      {% endif %}
+                    </td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+{% endif %}
+{% endif %}
+{% if invites and request.user == cup.author %}
+<h4>Wysłane zaproszenia:</h4>
+<table class="table table-striped table-dark">
+                <thead>
+                <tr>
+                  <th width="30%" scope="col">Nazwa</th>
+                    {% if cup.choosing_teams == True %}
+                  <th width="30%" scope="col">Drużyna</th>
+                    {% endif %}
+                  <th scope="col">Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+            {% for invite in invites.all %}
+                <tr>
+                    <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.first_name }}</span></th>
+
+                      {% if cup.registration == 'Otwarta' and request.user == invite.to_player %}
+                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                      {% endif %}
+                    <th scope="row">
+                        <a class="btn btn-danger" href="{% url 'reject_invite' invite.cup.id %}">Anuluj</a>
+                    </th>
+                </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+<h4>Zarejestrowani gracze:</h4>
+    {% endif %}
+        {% if cup.players %}
+                <table class="table table-striped table-dark">
+                <thead>
+                <tr>
+                  <th width="30%" scope="col">Nazwa</th>
+                    {% if cup.choosing_teams == True %}
+                  <th width="30%" scope="col">Drużyna</th>
+                    {% endif %}
+                  <th width="5px" scope="col">Z</th>
+                  <th width="5px" scope="col">R</th>
+                  <th width="5px" scope="col">P</th>
+                  <th width="5px" scope="col">BZ</th>
+                  <th width="5px" scope="col">BS</th>
+                  <th width="5px" scope="col">BB</th>
+                  <th width="5px" scope="col">PKT</th>
+                  <th scope="col">Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+            {% for player in cup.players.all %}
+                <tr>
+                    <th scope="row"><span class="btn btn-secondary">{{ player.first_name }}</span></th>
+                    {% if cup.choosing_teams == True %}
+                        {% if cup.registration == 'Zamknięta' %}
+                            {% for profile in profiles_in_cup.all %}
+                                {% if profile.user == player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for profile in profiles.all %}
+                                {% if profile.user == player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                        {% if cup.registration == 'Zamknięta' %}
+                                {% for profile in profiles_in_cup.all %}
+                                      {% if profile.user == player %}
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_scored }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>
+                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>
+                          <td>
+                                      {% endif %}
+                                            {% endfor %}
+                          {% else %}
+                            {% for profile in profiles.all %}
+                                      {% if profile.user == player %}
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                            <th scope="row"><span class="btn btn-secondary">#</span></th>
+                          <td>
+                                      {% endif %}
+                                            {% endfor %}
+                          {% endif %}
+                      {% if cup.registration == 'Otwarta' and request.user == player %}
+                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                      {% endif %}
+                    </td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+
+        {% else %}
+        <hr>
+        <p class="btn btn-secondary">Nie ma żadnych zarejestrowanych graczy w tych rozgrywkach.</p>
+        {% endif %}
 {% endif %}
 {% endblock %}

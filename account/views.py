@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login
-from cup.models import Cup
+from cup.models import Cup, Invite
 from account.models import Profile
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileForm
 from cup.models import Match
@@ -32,7 +32,7 @@ def user_login(request):
         matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
-        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(invites)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/login.html', {'form': form,
@@ -72,11 +72,13 @@ def register(request):
 @login_required
 def edit(request):
     profile = Profile.objects.get(user=request.user)
+    invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
     matches = Match.objects.all()
     matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
     matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
     matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
-    matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
+    matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(
+        invites)
     if request.method =='POST':
         user_form = UserEditForm(instance=request.user, data=request.POST)
         profile_form = ProfileForm(instance=profile, data=request.POST)
@@ -92,7 +94,8 @@ def edit(request):
                                                  'matches_user_to_enter': matches_user_to_enter,
                                                  'matches_user_to_confirm': matches_user_to_confirm,
                                                  'matches_user_to_waiting': matches_user_to_waiting,
-                                                 'matches_user_sum': matches_user_sum})
+                                                 'matches_user_sum': matches_user_sum,
+                                                 'invites': invites})
 
 
 @login_required
@@ -100,11 +103,12 @@ def profile(request, user_id):
     user = User.objects.get(id=user_id)
     profile = Profile.objects.get(user=user)
     matches = Match.objects.all()
+    invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
     if request.user.is_authenticated:
         matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
-        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting)
+        matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(invites)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'account/profile.html', {'user': user,
@@ -114,6 +118,7 @@ def profile(request, user_id):
                                                         'matches_user_to_enter': matches_user_to_enter,
                                                         'matches_user_to_confirm': matches_user_to_confirm,
                                                         'matches_user_to_waiting': matches_user_to_waiting,
-                                                        'matches_user_sum': matches_user_sum})
+                                                        'matches_user_sum': matches_user_sum,
+                                                        'invites': invites})
     else:
         return render(request, 'account/profile.html', {'user': user})

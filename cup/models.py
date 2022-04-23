@@ -70,13 +70,16 @@ class Cup(models.Model):
     types = (
         ('Puchar', (
             ('Puchar', 'Puchar (min. 4 graczy)'),
-            ('GrupyPuchar1mecz', 'Grupy (1 mecz) + Puchar (min. 8 graczy)'),
-            ('GrupyPuchar2mecze', 'Grupy (2 mecze) + Puchar (min. 8 graczy)'),
         )),
         ('Liga', (
             ('1 mecz', '1 mecz (min. 4 graczy)'),
             ('2 mecze', '2 mecze (min. 4 graczy)'),
         )),
+        ('Grupy i Puchar', (
+            ('GrupyPuchar1mecz', 'Grupy (1 mecz) + Puchar (min. 8 graczy)'),
+            ('GrupyPuchar2mecze', 'Grupy (2 mecze) + Puchar (min. 8 graczy)'),
+        )),
+
     )
     type = models.CharField(max_length=20, choices=types, default=types[0][0],
                             verbose_name='Rodzaj')
@@ -98,7 +101,7 @@ class Cup(models.Model):
     online = models.BooleanField(verbose_name='online?', default=False)
     declarations_status = (
         ('Offline', (
-            ('Ręczna', 'Ręczna'),
+            ('Ręczna', 'Ręczna (organizator)'),
         )),
         ('Online', (
             ('Otwarta', 'Otwarta'),
@@ -136,3 +139,22 @@ class Round(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Invite(models.Model):
+    class Meta:
+        verbose_name = _("Zaproszenie")
+        verbose_name_plural = _("Zaproszenia")
+    cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_invite', null=False, blank=False)
+    from_player = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Od', null=False, related_name='from_player')
+    to_player = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Do', null=False, related_name='to_player')
+    stat = (
+        ('Wysłano', 'Wysłano'),
+        ('Potwierdzono', 'Potwierdzono'),
+        ('Odrzucono', 'Odrzucono'),
+    )
+    status = models.CharField(max_length=20, choices=stat, default=stat[0][0],
+                                    verbose_name='Status')
+
+    def __str__(self):
+        return f"Zaproszenie {self.to_player.username} do rozgrywek {self.cup.name} przez {self.from_player.username}"
