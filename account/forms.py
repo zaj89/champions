@@ -36,4 +36,4 @@ class UserEditForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('team', 'phone',)
+        fields = ('team',)

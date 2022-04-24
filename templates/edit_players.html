@@ -203,7 +203,19 @@
 
                           <td>
                       {% if cup.registration == 'Otwarta' and request.user == cup.author %}
-                            <a type="submit" class="btn btn-secondary" href="{% url 'send_invite' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Zaproś</a>
+                                  {% if player in cup.players.all %}
+                                        <a type="submit" class="btn btn-secondary">Zapisany</a>
+                                  {% else %}
+                                        {% for invite in invitations_sent %}
+                                            {% if player == invite.to_player %}
+                                                <a type="submit" class="btn btn-secondary">Zaproszony</a>
+
+                                            {% else %}
+                                                <a type="submit" class="btn btn-secondary" href="{% url 'send_invite' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Zaproś</a>
+
+                                            {% endif %}
+                                        {% endfor %}
+                                  {% endif %}
                       {% endif %}
                     </td>
                 </tr>
@@ -212,7 +224,7 @@
                 </table>
 {% endif %}
 {% endif %}
-{% if invites and request.user == cup.author %}
+{% if invitations_sent and request.user == cup.author %}
 <h4>Wysłane zaproszenia:</h4>
 <table class="table table-striped table-dark">
                 <thead>
@@ -225,7 +237,7 @@
                 </tr>
                 </thead>
                 <tbody>
-            {% for invite in invites.all %}
+            {% for invite in invitations_sent.all %}
                 <tr>
                     <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.first_name }}</span></th>
 
@@ -233,7 +245,7 @@
                             <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
                       {% endif %}
                     <th scope="row">
-                        <a class="btn btn-danger" href="{% url 'reject_invite' invite.cup.id %}">Anuluj</a>
+                        <a class="btn btn-danger" href="{% url 'reject_invite' invite.cup.id invite.to_player.id %}">Anuluj</a>
                     </th>
                 </tr>
                     {% endfor %}

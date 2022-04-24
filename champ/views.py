@@ -35,11 +35,11 @@ def help(request):
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'help.html', {'last_cup_online': last_cup_online,
-                                              'last_cup_offline': last_cup_offline,
-                                              'matches_user_to_enter': matches_user_to_enter,
-                                              'matches_user_to_confirm': matches_user_to_confirm,
-                                              'matches_user_to_waiting': matches_user_to_waiting,
-                                              'matches_user_sum': matches_user_sum,
-                                              'invites': invites})
+                                             'last_cup_offline': last_cup_offline,
+                                             'matches_user_to_enter': matches_user_to_enter,
+                                             'matches_user_to_confirm': matches_user_to_confirm,
+                                             'matches_user_to_waiting': matches_user_to_waiting,
+                                             'matches_user_sum': matches_user_sum,
+                                             'invites': invites})
     else:
         return render(request, 'help.html')

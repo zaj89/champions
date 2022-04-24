@@ -301,9 +301,15 @@ def edit_players(request, cup_id: int):
                 messages.success(request, f'Gracz "{new_player.name}" został dodany.')
                 return HttpResponseRedirect('/cup/dashboard/{}/edit_players'.format(cup.id))
         else:
+            if not cup.choosing_teams:
                 player_form = PlayerForm()
+            else:
+                player_form = PlayerWithTeamForm()
     else:
-        player_form = PlayerForm()
+        if not cup.choosing_teams:
+            player_form = PlayerForm()
+        else:
+            player_form = PlayerWithTeamForm()
     players_search = None
     if cup.declarations == 'Na zaproszenie':
         search_post = request.GET.get('search')
@@ -350,7 +356,7 @@ def edit_players_online(request, cup_id: int):
     players = Player.objects.filter(cup=cup)
     profiles = Profile.objects.filter(user__in=cup.players.all())
     profiles_in_cup = ProfileInCup.objects.filter(cup=cup)
-    invites = Invite.objects.filter(cup=cup, status='Wysłano')
+    invitations_sent = Invite.objects.filter(cup=cup, status='Wysłano')
     players_search = None
     if cup.declarations == 'Na zaproszenie':
         search_post = request.GET.get('search')
@@ -369,6 +375,7 @@ def edit_players_online(request, cup_id: int):
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
                                                      'players_search': players_search,
+                                                     'invitations_sent': invitations_sent,
                                                      'invites': invites,
                                                      'profiles': profiles,
                                                      'profiles_in_cup': profiles_in_cup,
@@ -377,8 +384,7 @@ def edit_players_online(request, cup_id: int):
                                                      'matches_user_to_enter': matches_user_to_enter,
                                                      'matches_user_to_confirm': matches_user_to_confirm,
                                                      'matches_user_to_waiting': matches_user_to_waiting,
-                                                     'matches_user_sum': matches_user_sum,
-                                                     'invites': invites})
+                                                     'matches_user_sum': matches_user_sum,})
     else:
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
@@ -450,10 +456,9 @@ def close_registration(request, cup_id: int):
                     cup.elimination_matches = len(players) - 64
                 else:
                     len_rounds = 7
-                if cup.declarations != 'Ręczna':
-                    for player in players:
-                        profile = Profile.objects.get(user=player.user)
-                        ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
+                for player in players:
+                    profile = Profile.objects.get(user=player.user)
+                    ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
                 cup.len_rounds = len_rounds
                 cup.registration = 'Zamknięta'
                 cup.save()
@@ -494,7 +499,6 @@ def close_registration(request, cup_id: int):
                     ProfileInCup.objects.create(user=player.user, team=profile.team, cup=cup)
                 messages.success(request, 'Rejestracja została zamknięta.')
                 return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
-
             elif cup.type == '2 mecze':
                 players = list(Player.objects.filter(cup=cup))
                 shuffle(players)
@@ -1431,8 +1435,6 @@ def enter_the_result(request, cup_id: int, match_id: int):
                 else:
                     actual_round.promotion.add(player2)
                     actual_round.save()
-            player1 = ProfileInCup.objects.get(user=match_result.player1.user, cup=cup)
-            player2 = ProfileInCup.objects.get(user=match_result.player2.user, cup=cup)
             player1.goals_scored += match_result.result1
             player2.goals_scored += match_result.result2
             player2.goals_losted += match_result.result1
@@ -1896,7 +1898,7 @@ def reject_the_result(request, match_id):
 
 
 @login_required
-def list_matches_to_confirm(request):
+def archival_matches(request):
     matches = Match.objects.all()
     if request.user.is_authenticated:
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
@@ -1906,7 +1908,7 @@ def list_matches_to_confirm(request):
         matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(invites)
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
-        return render(request, 'list_matches_to_confirm.html', {'matches': matches,
+        return render(request, 'archival_matches.html', {'matches': matches,
                                                                 'last_cup_online': last_cup_online,
                                                                 'last_cup_offline': last_cup_offline,
                                                                 'matches_user_to_enter': matches_user_to_enter,
@@ -1916,7 +1918,7 @@ def list_matches_to_confirm(request):
                                                                 'invites': invites
                                                                 })
     else:
-        return render(request, 'list_matches_to_confirm.html', {'matches': matches})
+        return render(request, 'archival_matches.html', {'matches': matches})
 
 
 def send_invite(request, cup_id, player_id):
@@ -1940,16 +1942,15 @@ def confirm_invite(request, cup_id):
     cup.number_of_players += 1
     cup.save()
     Player.objects.create(user=request.user, name=request.user.first_name, cup=cup)
-    invite.status = 'Potwierdzono'
-    invite.save()
+    invite.delete()
     messages.success(request, f"Potwierdzono udział w rozgrywkach {cup.name}.")
     return HttpResponseRedirect(f'/cup/online/cup_list_with_open_registration/')
 
 
-def reject_invite(request, cup_id):
+def reject_invite(request, cup_id, player_id_to_del):
     cup = Cup.objects.get(id=cup_id)
-    to_player = User.objects.get(id=request.user.id)
-    invite = Invite.objects.get(cup=cup, to_player=to_player)
+    player_to_del = User.objects.get(id=player_id_to_del)
+    invite = Invite.objects.get(cup=cup, to_player=player_to_del)
     invite.delete()
     messages.error(request, f"Odrzucono zaproszenie do rozgrywek {cup.name}.")
     return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
