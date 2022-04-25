@@ -315,9 +315,8 @@ def edit_players(request, cup_id: int):
         search_post = request.GET.get('search')
         if search_post:
             players_search = User.objects.filter(
-                Q(username__icontains=search_post) & Q(firstname__icontains=search_post))
+                Q(username__icontains=search_post) & Q(first_name__icontains=search_post) & Q(id__exact=search_post))
             messages.success(request, f'Wyświetlono znalezionych użytkowników')
-    print(players_search)
     if request.user.is_authenticated:
         matches = Match.objects.all()
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
@@ -361,8 +360,12 @@ def edit_players_online(request, cup_id: int):
     if cup.declarations == 'Na zaproszenie':
         search_post = request.GET.get('search')
         if search_post:
-            players_search = User.objects.filter(Q(username__icontains=search_post) & Q(first_name__icontains=search_post))
-            messages.success(request, f'Wyświetlono znalezionych użytkowników')
+            try:
+                int(search_post)
+                players_search = User.objects.filter(id=int(search_post))
+            except ValueError:
+                players_search = User.objects.filter(
+                    Q(username__icontains=search_post) & Q(first_name__icontains=search_post))
     if request.user.is_authenticated:
         matches = Match.objects.all()
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
@@ -388,7 +391,6 @@ def edit_players_online(request, cup_id: int):
     else:
         return render(request, 'edit_players.html', {'cup': cup,
                                                      'players': players,
-                                                     'invites': invites,
                                                      'players_search': players_search,
                                                      'profiles': profiles,
                                                      'profiles_in_cup': profiles_in_cup})
@@ -1609,9 +1611,8 @@ def delete_the_result(request, cup_id: int, match_id: int):
 
 
 @login_required
-def cup_list_with_open_registration_online(request):
+def panel(request):
     cups = Cup.objects.exclude(declarations='Ręczna').filter(declarations="Na zaproszenie", players=request.user)
-    invites = Invite.objects.filter(to_player=request.user).exclude(status='Potwierdzono').exclude(status='Odrzucono')
     if request.user.is_authenticated:
         matches = Match.objects.all()
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
@@ -1629,7 +1630,6 @@ def cup_list_with_open_registration_online(request):
                                                                  'matches_user_to_confirm': matches_user_to_confirm,
                                                                  'matches_user_to_waiting': matches_user_to_waiting,
                                                                  'matches_user_sum': matches_user_sum,
-                                                                 'invites': invites
                                                                  })
     else:
         return render(request, 'cups_list_online_to_join.html', {'cups': cups,
@@ -1645,10 +1645,10 @@ def join_the_cup(request, cup_id):
         cup.save()
         Player.objects.create(user=request.user, name=request.user.first_name, cup=cup)
         messages.success(request, f"Dołączyłeś do {cup.name}.")
-        return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
+        return HttpResponseRedirect('/cup/online/panel/')
     else:
         messages.error(request, f"Jesteś już uczestnikiem rozgrywek {cup.name}.")
-        return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
+        return HttpResponseRedirect('/cup/online/panel/')
 
 
 @login_required
@@ -1661,13 +1661,13 @@ def left_the_cup(request, cup_id):
             cup.save()
 
             messages.success(request, f"Zrezygnowałeś z udziału w {cup.name}.")
-            return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
+            return HttpResponseRedirect('/cup/online/panel/')
         else:
             messages.error(request, f"Nie ma Ciebie na liście rozgrywek {cup.name}, więc nie możesz zrezygnować.")
-            return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
+            return HttpResponseRedirect('/cup/onlineonline/panel/')
     else:
         messages.error(request, "Nie można zrezygnować z rozgrywek po zamknięciu rejestracji.")
-        return HttpResponseRedirect('/cup/online/cup_list_with_open_registration/')
+        return HttpResponseRedirect('/cup/onlineonline/panel/')
 
 
 @login_required
@@ -1899,7 +1899,9 @@ def reject_the_result(request, match_id):
 
 @login_required
 def archival_matches(request):
-    matches = Match.objects.all()
+    player = Player.objects.get(user=request.user)
+    matches = Match.objects.filter(Q(player1=player) | Q(player2=player)).filter(Q(cup__declarations='Otwarta') | Q(cup__declarations='Na zaproszenie')).filter(Q(finished=True) & Q(confirmed=True))
+    # Działa, ale nie wyświetla listy meczy. Popraw szablon i popraw ustawianie pola online przy tworzeniu rozgrywek.
     if request.user.is_authenticated:
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
         matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
@@ -1909,48 +1911,63 @@ def archival_matches(request):
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'archival_matches.html', {'matches': matches,
-                                                                'last_cup_online': last_cup_online,
-                                                                'last_cup_offline': last_cup_offline,
-                                                                'matches_user_to_enter': matches_user_to_enter,
-                                                                'matches_user_to_confirm': matches_user_to_confirm,
-                                                                'matches_user_to_waiting': matches_user_to_waiting,
-                                                                'matches_user_sum': matches_user_sum,
-                                                                'invites': invites
-                                                                })
+                                                         'last_cup_online': last_cup_online,
+                                                         'last_cup_offline': last_cup_offline,
+                                                         'matches_user_to_enter': matches_user_to_enter,
+                                                         'matches_user_to_confirm': matches_user_to_confirm,
+                                                         'matches_user_to_waiting': matches_user_to_waiting,
+                                                         'matches_user_sum': matches_user_sum,
+                                                         'invites': invites
+                                                         })
     else:
         return render(request, 'archival_matches.html', {'matches': matches})
 
 
+@login_required
 def send_invite(request, cup_id, player_id):
     cup = Cup.objects.get(id=cup_id)
-    from_player = request.user
+    from_player = cup.author
     to_player = User.objects.get(id=player_id)
-    if len(Invite.objects.filter(cup=cup, from_player=from_player, to_player=to_player, status='Wysłano')) < 1:
-        Invite.objects.create(cup=cup, from_player=from_player, to_player=to_player, status='Wysłano')
-    else:
-        messages.error(request, f"Zaproszono już wcześniej {to_player.username} do udziału w rozgrywkach {cup.name}.")
+    if request.user == from_player:
+        if len(Invite.objects.filter(cup=cup, from_player=from_player, to_player=to_player, status='Wysłano')) < 1:
+            Invite.objects.create(cup=cup, from_player=from_player, to_player=to_player, status='Wysłano')
+        else:
+            messages.error(request, f"Zaproszono już wcześniej {to_player.username} do udziału w rozgrywkach {cup.name}.")
+            return HttpResponseRedirect(f'/cup/online/{cup.id}/edit_players_online/')
+        messages.success(request, f"Zaproszono {to_player.username} do udziału w rozgrywkach '{cup.name}'.")
         return HttpResponseRedirect(f'/cup/online/{cup.id}/edit_players_online/')
-    messages.success(request, f"Zaproszono {to_player.username} do udziału w rozgrywkach {cup.name}.")
-    return HttpResponseRedirect(f'/cup/online/{cup.id}/edit_players_online/')
+    else:
+        messages.success(request, f"Nie możesz wysłać zaproszenia jeżeli nie jesteś organizatorem rozgrywek.")
+        return HttpResponseRedirect(f'/cup/online/{cup.id}/edit_players_online/')
 
 
+@login_required
 def confirm_invite(request, cup_id):
     cup = Cup.objects.get(id=cup_id)
     to_player = User.objects.get(id=request.user.id)
     invite = Invite.objects.get(cup=cup, to_player=to_player)
-    cup.players.add(to_player)
-    cup.number_of_players += 1
-    cup.save()
-    Player.objects.create(user=request.user, name=request.user.first_name, cup=cup)
-    invite.delete()
-    messages.success(request, f"Potwierdzono udział w rozgrywkach {cup.name}.")
-    return HttpResponseRedirect(f'/cup/online/cup_list_with_open_registration/')
+    if request.user == invite.to_player:
+        cup.players.add(to_player)
+        cup.number_of_players += 1
+        cup.save()
+        Player.objects.create(user=request.user, name=request.user.first_name, cup=cup)
+        invite.delete()
+        messages.success(request, f"Zaproszenie zaakceptowano. Zarejestrowano Ciebie w rozgrywkach '{cup.name}'.")
+        return HttpResponseRedirect(f'/cup/online/panel/')
+    else:
+        messages.success(request, "Przyjąć zaproszenie może tylko jego adresat.")
+        return HttpResponseRedirect(f'/cup/online/panel/')
 
 
+@login_required
 def reject_invite(request, cup_id, player_id_to_del):
     cup = Cup.objects.get(id=cup_id)
     player_to_del = User.objects.get(id=player_id_to_del)
     invite = Invite.objects.get(cup=cup, to_player=player_to_del)
-    invite.delete()
-    messages.error(request, f"Odrzucono zaproszenie do rozgrywek {cup.name}.")
-    return HttpResponseRedirect(f'/cup/dashboard/{cup.id}/')
+    if request.user == invite.to_player or request.user == cup.author:
+        invite.delete()
+        messages.error(request, f"Odrzucono zaproszenie do rozgrywek {cup.name}.")
+        return HttpResponseRedirect(f'/cup/online/panel/')
+    else:
+        messages.error(request, "Odrzucić zaproszenie może jego adresat lub organizator.")
+        return HttpResponseRedirect(f'/cup/online/panel/')

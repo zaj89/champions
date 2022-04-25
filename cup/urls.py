@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import cups_list_offline, my_cups_list_online, cup_new, dashboard, edit_players, delete, del_players, \
     generate_round, close_registration, enter_the_result, delete_the_result, stats, \
-    cup_list_with_open_registration_online, join_the_cup, left_the_cup, edit_players_online, list_matches_to_enter, \
+    panel, join_the_cup, left_the_cup, edit_players_online, list_matches_to_enter, \
     archival_matches, enter_the_result_home, delete_the_result_home, confirm_the_result, reject_the_result, \
     send_invite, reject_invite, confirm_invite
 
@@ -9,8 +9,7 @@ from .views import cups_list_offline, my_cups_list_online, cup_new, dashboard, e
 urlpatterns = [
     path('offline/list', cups_list_offline, name='cups_list_offline'),
     path('online/<int:user_id>/my', my_cups_list_online, name='my_cups_list_online'),
-    path('online/cup_list_with_open_registration/', cup_list_with_open_registration_online,
-         name='cup_list_with_open_registration_online'),
+    path('online/panel/', panel, name='panel'),
     path('online/list_matches_to_enter/', list_matches_to_enter, name='list_matches_to_enter'),
     path('online/archival_matches/', archival_matches, name='archival_matches'),
     path('online/join_the_cup/<int:cup_id>/', join_the_cup, name='join_the_cup'),

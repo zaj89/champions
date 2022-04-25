@@ -7,6 +7,7 @@
         <tr>
           <th scope="col">Nazwa</th>
           <th scope="col">Liczba graczy</th>
+          <th scope="col">Aktualny etap</th>
           <th scope="col" colspan="2">Akcja</th>
         </tr>
         </thead>
@@ -15,6 +16,42 @@
         <tr>
             <th scope="row"><span class="btn btn-secondary">{{ cup.name }}</span></th>
           <td><span class="btn btn-secondary">{{ cup.players.all|length }}</span></td>
+            <td><span class="btn btn-secondary">
+
+              {% if cup.type == 'Puchar' %}
+                        {% if cup.actual_round == None  %}
+                            {% if cup.registration == 'Otwarta' %}
+                                Rejestracja
+                            {% else %}
+                                Nie rozpoczęte
+                            {% endif %}
+                       {% else %}
+                            {% if cup.finished %}
+                                Zakończony
+                            {% else %}
+                                {{ cup.actual_round }}
+                            {% endif %}
+                          {% endif %}
+              {% endif %}
+
+
+                {% if cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' %}
+                                        {% if not cup.league_generated %}
+                                            Nie rozpoczęty
+                                        {% elif match_in_groups_not_played %}
+                                            Faza grupowa (trwa)
+                                        {% elif not match_in_groups_not_played and not cup.cupgenerated %}
+                                            Faza grupowa (zakończona)
+                                        {% elif not match_in_groups_not_played and cup.cupgenerated and match_in_cup_not_played %}
+                                            Faza pucharowa (trwa)
+                                        {% elif not match_in_groups_not_played and cup.cupgenerated and not match_in_cup_not_played %}
+                                            Zakończony
+                                        {% endif %}
+
+
+                {% endif %}
+
+          </span></td>
           <td>
               {% if cup.registration == 'Otwarta' %}
                         {% if request.user not in cup.players.all %}
@@ -41,6 +78,6 @@
         </table>
 
 {% else %}
-<p class="btn btn-secondary">Nie utworzyłeś żadnych rozgrywek.</p>
+<p class="btn btn-secondary">Nie utworzyłeś żadnych rozgrywek online.</p>
 {% endif %}
 {% endblock %}
