@@ -11,6 +11,7 @@ from account.forms import SearchUserForm
 from .models import Cup, Player, Match, Round, Invite
 from account.models import ProfileInCup, Profile
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 
 @login_required
@@ -895,8 +896,8 @@ def generate_round(request, cup_id: int):
                                              player2=match[1],
                                              cup=cup,
                                              round=new_round)
-                        Match.objects.create(player1=match[0],
-                                             player2=match[1],
+                        Match.objects.create(player1=match[1],
+                                             player2=match[0],
                                              cup=cup,
                                              round=new_round2)
                     else:
@@ -904,8 +905,8 @@ def generate_round(request, cup_id: int):
                                              player2=match[0],
                                              cup=cup,
                                              round=new_round)
-                        Match.objects.create(player1=match[1],
-                                             player2=match[0],
+                        Match.objects.create(player1=match[0],
+                                             player2=match[1],
                                              cup=cup,
                                              round=new_round2)
 
@@ -945,8 +946,8 @@ def generate_round(request, cup_id: int):
                                              player2=match[1],
                                              cup=cup,
                                              round=new_round)
-                        Match.objects.create(player1=match[0],
-                                             player2=match[1],
+                        Match.objects.create(player1=match[1],
+                                             player2=match[0],
                                              cup=cup,
                                              round=new_round2)
                     else:
@@ -954,8 +955,8 @@ def generate_round(request, cup_id: int):
                                              player2=match[0],
                                              cup=cup,
                                              round=new_round)
-                        Match.objects.create(player1=match[1],
-                                             player2=match[0],
+                        Match.objects.create(player1=match[0],
+                                             player2=match[1],
                                              cup=cup,
                                              round=new_round2)
         cup.len_rounds = all_rounds
@@ -1259,8 +1260,8 @@ def generate_round(request, cup_id: int):
                                                      player2=match[1],
                                                      cup=new_group,
                                                      round=new_round)
-                                Match.objects.create(player1=match[0],
-                                                     player2=match[1],
+                                Match.objects.create(player1=match[1],
+                                                     player2=match[0],
                                                      cup=new_group,
                                                      round=new_round2)
                             else:
@@ -1268,8 +1269,8 @@ def generate_round(request, cup_id: int):
                                                      player2=match[0],
                                                      cup=new_group,
                                                      round=new_round)
-                                Match.objects.create(player1=match[1],
-                                                     player2=match[0],
+                                Match.objects.create(player1=match[0],
+                                                     player2=match[1],
                                                      cup=new_group,
                                                      round=new_round2)
                         new_round.league_generated = True
@@ -1309,8 +1310,8 @@ def generate_round(request, cup_id: int):
                                                      player2=match[1],
                                                      cup=new_group,
                                                      round=new_round)
-                                Match.objects.create(player1=match[0],
-                                                     player2=match[1],
+                                Match.objects.create(player1=match[1],
+                                                     player2=match[0],
                                                      cup=new_group,
                                                      round=new_round2)
                             else:
@@ -1318,8 +1319,8 @@ def generate_round(request, cup_id: int):
                                                      player2=match[0],
                                                      cup=new_group,
                                                      round=new_round)
-                                Match.objects.create(player1=match[1],
-                                                     player2=match[0],
+                                Match.objects.create(player1=match[0],
+                                                     player2=match[1],
                                                      cup=new_group,
                                                      round=new_round2)
                         new_round.league_generated = True
@@ -1612,7 +1613,7 @@ def delete_the_result(request, cup_id: int, match_id: int):
 
 @login_required
 def panel(request):
-    cups = Cup.objects.exclude(declarations='Ręczna').filter(declarations="Na zaproszenie", players=request.user)
+    cups = Cup.objects.exclude(declarations='Ręczna').exclude(declarations="Na zaproszenie", players=not request.user)
     if request.user.is_authenticated:
         matches = Match.objects.all()
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
@@ -1657,6 +1658,8 @@ def left_the_cup(request, cup_id):
     if cup.registration == "Otwarta":
         if request.user in cup.players.all():
             cup.players.remove(request.user)
+            player = Player.objects.get(user=request.user, cup=cup)
+            player.delete()
             cup.number_of_players -= 1
             cup.save()
 
@@ -1899,9 +1902,11 @@ def reject_the_result(request, match_id):
 
 @login_required
 def archival_matches(request):
-    player = Player.objects.get(user=request.user)
-    matches = Match.objects.filter(Q(player1=player) | Q(player2=player)).filter(Q(cup__declarations='Otwarta') | Q(cup__declarations='Na zaproszenie')).filter(Q(finished=True) & Q(confirmed=True))
-    # Działa, ale nie wyświetla listy meczy. Popraw szablon i popraw ustawianie pola online przy tworzeniu rozgrywek.
+    player = Player.objects.filter(user=request.user)
+    matches = Match.objects.filter(Q(player1__in=player) | Q(player2__in=player)).filter(Q(cup__declarations='Otwarta') | Q(cup__declarations='Na zaproszenie')).filter(Q(finished=True) & Q(confirmed=True))
+    matches_paginator = Paginator(matches, 20)
+    page_num = request.GET.get('page')
+    page = matches_paginator.get_page(page_num)
     if request.user.is_authenticated:
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
         matches_user_to_waiting = matches.filter(player2__user=request.user, finished=False, confirmed=False)
@@ -1911,6 +1916,8 @@ def archival_matches(request):
         last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
         last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
         return render(request, 'archival_matches.html', {'matches': matches,
+                                                         'page': page,
+                                                         'count': matches_paginator.count,
                                                          'last_cup_online': last_cup_online,
                                                          'last_cup_offline': last_cup_offline,
                                                          'matches_user_to_enter': matches_user_to_enter,

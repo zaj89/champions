@@ -19,6 +19,22 @@
           <td><span class="btn btn-secondary">{{ cup.players.all|length }}</span></td>
           <td><span class="btn btn-secondary">
 
+              {% if cup.type == '1 mecz' or cup.type == '2 mecze' %}
+                        {% if cup.actual_round == None  %}
+                            {% if cup.registration == 'Otwarta' %}
+                                Rejestracja
+                            {% else %}
+                                Nie rozpoczęte
+                            {% endif %}
+                       {% else %}
+                            {% if cup.finished %}
+                                Zakończony
+                            {% else %}
+                                Trwa
+                            {% endif %}
+                          {% endif %}
+              {% endif %}
+
               {% if cup.type == 'Puchar' %}
                         {% if cup.actual_round == None  %}
                             {% if cup.registration == 'Otwarta' %}
