@@ -1,4 +1,20 @@
 
+![Logo](http://champions.pythonanywhere.com/static/assets/favicon.ico)
+
+
+# Champions 
+
+Application for organizing cup competitions.
+
+
+
+## Deployment
+
+
+- [Champions](https://champions.pythonanywhere.com)
+- Account for a recruiter
+    #### login: rectruiter
+    #### password: test
 # Opis Funkcji (PL)
 ## Rodzaje rozgrywek:
 ### Puchar (min. 4 graczy):
@@ -37,3 +53,7 @@ W trybie offline wynik można wprowadzić do systemu w panelu zarządzającym ro
 
 ### Online:
 W trybie online wprowadzanie wyniku odbywa się w zakładce Online--> Mecze. Gospodarz zalogowany na swoje konto klika "Wprowadź", wprowadza wynik i zatwierdza. Następnie gość zalogowany na swoje konto w tej samej zakładce potwierdza bądź odrzuca wprowadzony przez gospodarza wynik.
+## Authors
+
+- [@zaj89](https://www.github.com/zaj89)
+
