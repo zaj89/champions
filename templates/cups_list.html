@@ -60,6 +60,7 @@
                   <a type="submit" class="btn btn-secondary" href="{% url 'edit_players' cup.id %}">Lista graczy</a>
               {% if cup.author == request.user %}
                   <a type="submit" class="btn btn-secondary" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+
               {% endif %}
           </td>
         </tr>

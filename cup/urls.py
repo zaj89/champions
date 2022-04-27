@@ -3,7 +3,7 @@ from .views import cups_list_offline, my_cups_list_online, cup_new, dashboard, e
     generate_round, close_registration, enter_the_result, delete_the_result, stats, \
     panel, join_the_cup, left_the_cup, edit_players_online, list_matches_to_enter, \
     archival_matches, enter_the_result_home, delete_the_result_home, confirm_the_result, reject_the_result, \
-    send_invite, reject_invite, confirm_invite
+    send_invite, reject_invite, confirm_invite, archival_cups, archive
 
 
 urlpatterns = [
@@ -12,6 +12,8 @@ urlpatterns = [
     path('online/panel/', panel, name='panel'),
     path('online/list_matches_to_enter/', list_matches_to_enter, name='list_matches_to_enter'),
     path('online/archival_matches/', archival_matches, name='archival_matches'),
+    path('online/archival_cups/', archival_cups, name='archival_cups'),
+    path('online/archive/<int:cup_id>', archive, name='archive'),
     path('online/join_the_cup/<int:cup_id>/', join_the_cup, name='join_the_cup'),
     path('online/left_the_cup/<int:cup_id>/', left_the_cup, name='left_the_cup'),
     path('online/delete_the_result_home/<int:match_id>/', delete_the_result_home, name='delete_the_result_home'),

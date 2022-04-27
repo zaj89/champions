@@ -23,7 +23,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     {% if request.user.is_authenticated %}
                         <div class="btn-group" style="margin:5px">
-                  <a href="{% url 'cup_new' %}" class="btn btn-secondary">
+                  <a href="{% url 'cup_new' %}" class="btn btn-success">
                     Utwórz
                   </a>
                         </div>
@@ -39,7 +39,9 @@
                         <li><hr class="dropdown-divider" /></li>
                       {% else %}
                     {% endif %}
-                      <li><a class="dropdown-item" href="{% url 'cups_list_offline' %}">Utworzone</a></li>
+                      <li><a class="dropdown-item" href="{% url 'cups_list_offline' %}">Prowadź</a></li>
+
+
                   </ul>
                 </div>
                <div class="btn-group" style="margin:5px">
@@ -58,7 +60,7 @@
                         </li>
                         <li><hr class="dropdown-divider" /></li>
                     {% endif %}
-                      <li><a class="dropdown-item" href="{% url 'my_cups_list_online' request.user.id %}">Utworzone</a></li>
+                      <li><a class="dropdown-item" href="{% url 'my_cups_list_online' request.user.id %}">Prowadź</a></li>
                                               <li><hr class="dropdown-divider" /></li>
                     <li><a class="dropdown-item" href="{% url 'panel' %}">Panel
                             {% if invites|length > 0 %}
@@ -67,7 +69,7 @@
                               </span>
                               {% endif %}
                     </a></li>
-                        <li><hr class="dropdown-divider" /></li>
+
                             <li><a class="dropdown-item" href="{% url 'list_matches_to_enter' %}">Mecze
                                 {% if matches_user_to_enter|length > 0 %}
                       <span class="badge rounded-pill bg-primary">
@@ -84,11 +86,25 @@
                         {{ matches_user_to_confirm|length }}
                       </span>
                       {% endif %}</a></li>
-                            <li><a class="dropdown-item" href="{% url 'archival_matches' %}">Archiwum</a></li>
 
                   </ul>
                 </div>
                         {% endif %}
+
+
+                        <div class="btn-group" style="margin:5px">
+                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Archiwum
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                      <li><a class="dropdown-item" href="{% url 'archival_matches' %}">Mecze</a></li>
+                      <li><a class="dropdown-item" href="{% url 'archival_cups' %}">Rozgrywki</a></li>
+
+
+
+                  </ul>
+                </div>
+
                 <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     {% if request.user.is_authenticated %}

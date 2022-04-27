@@ -8,42 +8,37 @@
 <p>Liczba meczy w archiwum: {{ count }}</p>
 <br>
 {% if matches %}
-<table class="table table-striped table-dark">
+<center>
+<table class="table table-striped table-dark" style="max-width:800px">
         <thead>
-        <tr>
-          <th scope="col"></th>
+        <tr align="center">
+          <th scope="col">Rozgrywki</th>
+          <th scope="col">Typ</th>
+          <th scope="col">Etap</th>
           <th scope="col">Gospodarz</th>
           <th scope="col">Rezultat</th>
           <th scope="col">Gość</th>
-          <th scope="col" colspan="2">Akcja</th>
         </tr>
         </thead>
         <tbody>
     {% for match in page.object_list %}
         {% if match.confirmed %}
             {% if match.player1.user == request.user or match.player2.user == request.user %}
-        <tr>
-            <th scope="row" width="22.5%"><span></span></th>
+        <tr align="center">
+            <td width="20%"><span class="btn btn-secondary">{{ match.cup.name }}</span></td>
+            <td width="20%"><span class="btn btn-secondary">{{ match.cup.type }}</span></td>
+            <td width="20%"><span class="btn btn-secondary">{{ match.round.name }}</span></td>
             <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
           <td width="15%"><span class="btn btn-secondary">{% if match.finished and not match.confirmed %}Niepotwierdzony ({{ match.result1 }}:{{ match.result2 }}){% elif not match.finished and not match.confirmed %}Nierozegrany{% else %}{{ match.result1 }} : {{ match.result2 }}{% endif %}</span></td>
           <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
-          <td width="45%">
-                    {% if match.finished == False and match.player1.user == request.user %}
-                           <a class="btn btn-secondary" href="{% url 'enter_the_result_home' match.id %}">Wprowadź</a>
-                    {% elif match.confirmed == False and match.player1.user == request.user and match.finished == True %}
-                           <a class="btn btn-secondary" href="{% url 'delete_the_result_home' match.id %}">Wyczyść</a>
-                    {% elif match.confirmed == False and match.player2.user == request.user and match.finished == True %}
-                           <a class="btn btn-secondary" href="{% url 'confirm_the_result' match.id %}">Potwierdź</a>
-                    {% else %}
-                           <a class="btn btn-secondary">Rozegrany</a>
-                    {% endif %}
-          </td>
+
         </tr>
         {% endif %}
         {% endif %}
     {% endfor %}
         </tbody>
         </table>
+    </center>
     <div class="page-links">
         {% if page.has_previous %}
         <a class="btn btn-secondary" href="{% url 'archival_matches' %}?page={{ page.previous_page_number }}">Poprzednia</a>

@@ -115,6 +115,7 @@ class Cup(models.Model):
                                         null=True)
     promotion = models.ManyToManyField(Player, related_name='promotion_group', verbose_name='Awans', blank=True)
     cupgenerated = models.BooleanField(verbose_name='Wygenerowano puchar', default=False)
+    archived = models.BooleanField(verbose_name='Zarchiwizowano', default=False)
 
     def clean(self):
         if len(str(self.name)) > 50:

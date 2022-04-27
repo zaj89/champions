@@ -55,9 +55,9 @@
           <td>
               {% if cup.registration == 'Otwarta' %}
                         {% if request.user not in cup.players.all %}
-                      <a type="submit" class="btn btn-secondary" href="{% url 'join_the_cup' cup.id %}">Dołącz</a>
+                      <a type="submit" class="btn btn-success" href="{% url 'join_the_cup' cup.id %}">Dołącz</a>
                         {% else %}
-                      <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}">Zrezygnuj</a>
+                      <a type="submit" class="btn btn-danger" href="{% url 'left_the_cup' cup.id %}">Zrezygnuj</a>
                         {% endif %}
                     {% else %}
                       <a type="submit" class="btn btn-secondary">Rej. Zamknięta</a>
@@ -66,9 +66,8 @@
                 <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Zarządzaj</a>
               {% endif %}
                   <a type="submit" class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Lista graczy</a>
-                  <a type="submit" class="btn btn-secondary" href="{% url 'stats' cup.id %}">Statystyki</a>
               {% if cup.author == request.user %}
-                  <a type="submit" class="btn btn-secondary" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+                  <a type="submit" class="btn btn-danger" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
               {% endif %}
 
           </td>

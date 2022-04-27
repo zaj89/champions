@@ -29,7 +29,12 @@
                                 {% else %}
                                     <a class="btn btn-secondary" href="{% url 'edit_players' cup.id %}">Edytuj</a>
                                 {% endif %}
-
+                            {% else %}
+                                {% if cup.declarations != 'Ręczna' %}
+                                    <a class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Podgląd</a>
+                                {% else %}
+                                    <a class="btn btn-secondary" href="{% url 'edit_players' cup.id %}">Podgląd</a>
+                                {% endif %}
                             {% endif %}
     </li>
     <li class="list-group-item">
@@ -121,6 +126,9 @@
       {% if cup.author == request.user %}
     <li class="list-group-item">
     <a class="btn btn-danger" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+                          {% if cup.finished and not cup.archived %}
+                        <a type="submit" class="btn btn-secondary" href="{% url 'archive' cup.id %}" onclick="return confirm('Jesteś pewien?')">Archiwizuj</a>
+                  {% endif %}
     </li>
       {% endif %}
   </ul>

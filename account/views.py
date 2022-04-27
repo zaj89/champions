@@ -33,8 +33,10 @@ def user_login(request):
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(invites)
-        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
-        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
+        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').exclude(
+            archived=True).last()
+        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').exclude(
+            archived=True).last()
         return render(request, 'account/login.html', {'form': form,
                                                       'last_cup_online': last_cup_online,
                                                       'last_cup_offline': last_cup_offline,
@@ -109,8 +111,10 @@ def profile(request, user_id):
         matches_user_to_enter = matches.filter(player1__user=request.user, finished=False, confirmed=False)
         matches_user_to_confirm = matches.filter(player2__user=request.user, finished=True, confirmed=False)
         matches_user_sum = len(matches_user_to_confirm) + len(matches_user_to_enter) + len(matches_user_to_waiting) + len(invites)
-        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').last()
-        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').last()
+        last_cup_online = Cup.objects.filter(author_id=request.user.id).exclude(declarations='Ręczna').exclude(
+            archived=True).last()
+        last_cup_offline = Cup.objects.filter(author_id=request.user.id, declarations='Ręczna').exclude(
+            archived=True).last()
         return render(request, 'account/profile.html', {'user': user,
                                                         'profile': profile,
                                                         'last_cup_online': last_cup_online,
