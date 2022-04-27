@@ -18,7 +18,7 @@
             Rejerstracja:
                             {% if cup.registration == 'Otwarta' %}
                                 Otwarta
-                                    {% if cup.number_of_players >= 4 %}
+                                    {% if cup.number_of_players >= 4 and cup.author == request.user %}
                                         <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
                                     {% endif %}
                             {% else %}
@@ -83,9 +83,10 @@
 <!--              <th width="5px" scope="col">BS</th>-->
 <!--              <th width="5px" scope="col">BB</th>-->
 <!--              <th width="5px" scope="col">PKT</th>-->
-                    {% if not cup.archived %}
-                <th scope="col">Akcja</th>
+                    {% if not cup.archived and cup.registration == 'Otwarta' %}
+                        <th scope="col">Akcja</th>
                     {% endif %}
+
             </tr>
             </thead>
             <tbody>
@@ -104,11 +105,11 @@
 <!--                <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>-->
 <!--                <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>-->
               {% if not cup.archived %}
-                <td>
-                  {% if cup.registration == 'Otwarta' %}
+                  {% if cup.registration == 'Otwarta' and cup.registration == 'Otwarta' %}
+                                <td>
                         <a type="submit" class="btn btn-secondary" href="{% url 'del_players' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
-                  {% endif %}
-                </td>
+                                  </td>
+                    {% endif %}
                {% endif %}
             </tr>
                 {% endfor %}
@@ -137,7 +138,9 @@
 <!--                  <th width="5px" scope="col">BS</th>-->
 <!--                  <th width="5px" scope="col">BB</th>-->
 <!--                  <th width="5px" scope="col">PKT</th>-->
+                {% if not cup.registration == 'Zamknięta' %}
                   <th scope="col">Akcja</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -170,7 +173,6 @@
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>-->
-                          <td>
                                       {% endif %}
                                             {% endfor %}
                           {% else %}
@@ -183,15 +185,18 @@
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
-                          <td>
+
                                       {% endif %}
                                             {% endfor %}
                           {% endif %}
-                      {% if cup.registration == 'Otwarta' and request.user == player %}
-                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
-                      {% endif %}
-                    </td>
-                </tr>
+                        {% if cup.registration == 'Otwarta' and request.user == player %}
+                            <td>
+                                    <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                            </td>
+                        {% else %}
+                            <td>
+                            </td>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
                 </table>
@@ -229,7 +234,9 @@
                     {% if cup.choosing_teams == True %}
                   <th scope="col">Drużyna</th>
                     {% endif %}
+                  {% if not cup.registration == 'Zamknięta' %}
                   <th scope="col">Akcja</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -271,7 +278,9 @@
                     {% if cup.choosing_teams == True %}
                   <th scope="col">Drużyna</th>
                     {% endif %}
+                    {% if not cup.registration == 'Zamknięta' %}
                   <th scope="col">Akcja</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -311,7 +320,9 @@
 <!--                  <th width="5px" scope="col">BS</th>-->
 <!--                  <th width="5px" scope="col">BB</th>-->
 <!--                  <th width="5px" scope="col">PKT</th>-->
-                  <th scope="col">Akcja</th>
+                  {% if not cup.registration == 'Zamknięta' %}
+                    <th scope="col">Akcja</th>
+                  {% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -320,23 +331,24 @@
                     <th scope="row"><span class="btn btn-secondary">{{ player.id }}</span></th>
                     <th scope="row"><span class="btn btn-secondary">{{ player.first_name }}</span></th>
                     {% if cup.choosing_teams == True %}
-                        {% if cup.registration == 'Zamknięta' %}
-                            {% for profile in profiles_in_cup.all %}
-                                {% if profile.user == player %}
-                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            {% for profile in profiles.all %}
-                                {% if profile.user == player %}
-                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
+                            {% if cup.registration == 'Zamknięta' %}
+                                    {% for profile in profiles_in_cup.all %}
+                                            {% if profile.user == player %}
+                                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                            {% endif %}
+                                    {% endfor %}
+                            {% else %}
+                                    {% for profile in profiles.all %}
+                                            {% if profile.user == player %}
+                                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                            {% endif %}
+                                    {% endfor %}
+                            {% endif %}
                     {% endif %}
-                        {% if cup.registration == 'Zamknięta' %}
-                                {% for profile in profiles_in_cup.all %}
-                                      {% if profile.user == player %}
+
+                    {% if cup.registration == 'Zamknięta' %}
+                            {% for profile in profiles_in_cup.all %}
+                                    {% if profile.user == player %}
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>-->
@@ -344,10 +356,9 @@
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>-->
-                          <td>
-                                      {% endif %}
-                                            {% endfor %}
-                          {% else %}
+                                    {% endif %}
+                             {% endfor %}
+                    {% else %}
                             {% for profile in profiles.all %}
                                       {% if profile.user == player %}
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
@@ -357,14 +368,15 @@
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
 <!--                            <th scope="row"><span class="btn btn-secondary">#</span></th>-->
-                          <td>
                                       {% endif %}
                                             {% endfor %}
-                          {% endif %}
+                    {% endif %}
                       {% if cup.registration == 'Otwarta' and request.user == player %}
+                      <td>
                             <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                      </td>
                       {% endif %}
-                    </td>
+
                 </tr>
                     {% endfor %}
                 </tbody>

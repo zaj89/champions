@@ -37,8 +37,7 @@
                                 <a class="dropdown-item" href="{% url 'dashboard' last_cup_offline.id %}">Kontynuuj ({{ last_cup_offline.name|slice:":5" }}...)</a>
                         </li>
                         <li><hr class="dropdown-divider" /></li>
-                      {% else %}
-                    {% endif %}
+                      {% endif %}
                       <li><a class="dropdown-item" href="{% url 'cups_list_offline' %}">Prowadź</a></li>
 
 
@@ -59,7 +58,7 @@
                                 <a class="dropdown-item" href="{% url 'dashboard' last_cup_online.id %}">Kontynuuj ({{ last_cup_online.name|slice:":5" }}...)</a>
                         </li>
                         <li><hr class="dropdown-divider" /></li>
-                    {% endif %}
+                      {% endif %}
                       <li><a class="dropdown-item" href="{% url 'my_cups_list_online' request.user.id %}">Prowadź</a></li>
                                               <li><hr class="dropdown-divider" /></li>
                     <li><a class="dropdown-item" href="{% url 'panel' %}">Panel
@@ -67,11 +66,11 @@
                               <span class="badge rounded-pill bg-primary">
                                 {{ invites|length }}
                               </span>
-                              {% endif %}
+                            {% endif %}
                     </a></li>
 
                             <li><a class="dropdown-item" href="{% url 'list_matches_to_enter' %}">Mecze
-                                {% if matches_user_to_enter|length > 0 %}
+                      {% if matches_user_to_enter|length > 0 %}
                       <span class="badge rounded-pill bg-primary">
                         {{ matches_user_to_enter|length }}
                       </span>
@@ -89,9 +88,6 @@
 
                   </ul>
                 </div>
-                        {% endif %}
-
-
                         <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Archiwum
@@ -104,6 +100,7 @@
 
                   </ul>
                 </div>
+                        {% endif %}
 
                 <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

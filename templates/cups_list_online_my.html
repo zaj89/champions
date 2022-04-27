@@ -34,6 +34,21 @@
                           {% endif %}
               {% endif %}
 
+                {% if cup.type == '1 mecz' or cup.type == '2 mecze' %}
+                        {% if not cup.actual_round  %}
+                                {% if cup.registration == 'Otwarta' %}
+                                        Rejestracja
+                                {% else %}
+                                        Nie rozpoczęte
+                                {% endif %}
+                       {% else %}
+                                {% if cup.finished %}
+                                        Zakończony
+                                {% else %}
+                                        Trwa
+                                {% endif %}
+                       {% endif %}
+              {% endif %}
 
                 {% if cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' %}
                                         {% if not cup.league_generated %}

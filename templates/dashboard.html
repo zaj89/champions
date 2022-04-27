@@ -102,7 +102,7 @@
             {% if cup.registration == 'Zamknięta' and not match_not_played %}
                     {% if cup.author == request.user %}
                             {% if cup.type == '1 mecz'  or cup.type == '2 mecze' %}
-                                <a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj</a>
+                                <a href="{% url 'generate_round' cup.id %}" class="btn btn-success">Generuj</a>
                             {% endif %}
                     {% endif %}
             {% else %}
@@ -112,7 +112,7 @@
 {% elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' or cup.type == 'Puchar' %}
         {% if cup.registration == 'Zamknięta' and not match_in_groups_not_played and not match_in_cup_not_played and not match_not_played %}
                 {% if cup.author == request.user and not cup.finished %}
-                        <a href="{% url 'generate_round' cup.id %}" class="btn btn-secondary">Generuj</a>
+                        <a href="{% url 'generate_round' cup.id %}" class="btn btn-success">Generuj</a>
                 {% endif %}
         {% else %}
                 {% if match_not_played %}
@@ -171,51 +171,51 @@
             <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
           <td><span class="btn btn-secondary">{{ player.name }}</span></td>
                     {% if cup.choosing_teams == True %}
-                        {% if cup.registration == 'Zamknięta' %}
-                            {% for profile in profiles_in_cup.all %}
-                                {% if profile.user == player %}
-                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            {% for profile in profiles.all %}
-                                {% if profile.user == player %}
-                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endif %}
-                        {% if cup.registration == 'Zamknięta' %}
-                            {% if cup.declarations != 'Ręczna' %}
-                                {% for profile in profiles_in_cup.all %}
-                                      {% if profile.user == player.user %}
-                            <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
-                                      {% endif %}
-                                  {% endfor %}
+                            {% if cup.registration == 'Zamknięta' %}
+                                    {% for profile in profiles_in_cup.all %}
+                                            {% if profile.user == player %}
+                                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                            {% endif %}
+                                    {% endfor %}
                             {% else %}
-                                <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_scored }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>
-                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>
+                                    {% for profile in profiles.all %}
+                                            {% if profile.user == player %}
+                                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                            {% endif %}
+                                    {% endfor %}
                             {% endif %}
-                          {% else %}
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                            <th scope="row"><span class="btn btn-secondary">#</span></th>
-                          {% endif %}
+                    {% endif %}
+                            {% if cup.registration == 'Zamknięta' %}
+                                    {% if cup.declarations != 'Ręczna' %}
+                                            {% for profile in profiles_in_cup.all %}
+                                                      {% if profile.user == player.user %}
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.wins }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.draws }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.losses }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_scored }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_losted }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.goals_bilans }}</span></th>
+                                            <th scope="row"><span class="btn btn-secondary">{{ profile.points }}</span></th>
+                                                      {% endif %}
+                                              {% endfor %}
+                                    {% else %}
+                                            <th scope="row"><span class="btn btn-secondary">{{ player.wins }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.draws }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.losses }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.goals_scored }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.goals_losted }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.goals_bilans }}</span></th>
+                                        <th scope="row"><span class="btn btn-secondary">{{ player.points }}</span></th>
+                                    {% endif %}
+                              {% else %}
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                                    <th scope="row"><span class="btn btn-secondary">#</span></th>
+                              {% endif %}
             {% endfor %}
         </tbody>
         </table>

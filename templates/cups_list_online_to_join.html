@@ -20,19 +20,19 @@
           <td><span class="btn btn-secondary">
 
               {% if cup.type == '1 mecz' or cup.type == '2 mecze' %}
-                        {% if cup.actual_round == None  %}
-                            {% if cup.registration == 'Otwarta' %}
-                                Rejestracja
-                            {% else %}
-                                Nie rozpoczęte
-                            {% endif %}
+                        {% if not cup.actual_round  %}
+                                {% if cup.registration == 'Otwarta' %}
+                                        Rejestracja
+                                {% else %}
+                                        Nie rozpoczęte
+                                {% endif %}
                        {% else %}
-                            {% if cup.finished %}
-                                Zakończony
-                            {% else %}
-                                Trwa
-                            {% endif %}
-                          {% endif %}
+                                {% if cup.finished %}
+                                        Zakończony
+                                {% else %}
+                                        Trwa
+                                {% endif %}
+                       {% endif %}
               {% endif %}
 
               {% if cup.type == 'Puchar' %}
@@ -71,15 +71,13 @@
           </span></td>
           <td>
               {% if cup.registration == 'Otwarta' %}
-                    {% if cup.declarations == 'Ręczna' %}
+                    {% if cup.declarations != 'Ręczna' %}
                             {% if request.user not in cup.players.all %}
                                  <a type="submit" class="btn btn-success" href="{% url 'join_the_cup' cup.id %}">Dołącz</a>
                             {% else %}
                                  <a type="submit" class="btn btn-danger" href="{% url 'left_the_cup' cup.id %}">Zrezygnuj</a>
                             {% endif %}
                     {% endif %}
-              {% else %}
-                    <a type="submit" class="btn btn-secondary">Rej. Zamknięta</a>
               {% endif %}
               {% if cup.author == request.user %}
                 <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Zarządzaj</a>

@@ -445,6 +445,8 @@ def edit_players_online(request, cup_id: int):
                                                              'players_search': players_search,
                                                              'profiles': profiles,
                                                              'profiles_in_cup': profiles_in_cup})
+    elif cup.declarations == 'Otwarta':
+        return HttpResponseRedirect('/cup/dashboard/{}/edit_players'.format(cup.id))
 
 
 @login_required
@@ -1483,8 +1485,8 @@ def enter_the_result(request, cup_id: int, match_id: int):
             match_result = match_form.save(commit=False)
             match_result.finished = True
             match_result.confirmed = True
-            player1 = match_result.player1
-            player2 = match_result.player2
+            player1 = ProfileInCup.objects.get(user=match_result.player1.user, cup=cup)
+            player2 = ProfileInCup.objects.get(user=match_result.player2.user, cup=cup)
             if cup.type == 'Puchar' or cup.cupgenerated:
                 if match_result.result1 > match_result.result2:
                     actual_round.promotion.add(player1)
@@ -1629,8 +1631,8 @@ def delete_the_result(request, cup_id: int, match_id: int):
         else:
             actual_round.promotion.remove(match.player2)
             actual_round.save()
-    player1 = match.player1
-    player2 = match.player2
+    player1 = ProfileInCup.objects.get(user=match.player1.user, cup=cup)
+    player2 = ProfileInCup.objects.get(user=match.player2.user, cup=cup)
     player1.goals_scored -= match.result1
     player2.goals_scored -= match.result2
     player2.goals_losted -= match.result1
@@ -1670,7 +1672,7 @@ def delete_the_result(request, cup_id: int, match_id: int):
 
 @login_required
 def panel(request):
-    cups = Cup.objects.exclude(declarations='Ręczna').exclude(declarations="Na zaproszenie", players=not request.user).order_by('-id')
+    cups = Cup.objects.exclude(declarations='Ręczna').exclude(declarations="Na zaproszenie", players=not request.user).exclude(archived=True).order_by('-id')
     if request.user.is_authenticated:
         matches = Match.objects.all()
         invites = Invite.objects.filter(to_player=request.user, status='Wysłano')
