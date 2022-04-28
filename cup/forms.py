@@ -1,5 +1,6 @@
 from django import forms
-from .models import Cup, Player, Match
+from .models import Cup, Match
+from account.models import ProfileInCup
 
 
 # The CupForm class is a ModelForm that is used to create a new cup.
@@ -16,14 +17,14 @@ class CupForm(forms.ModelForm):
 # This class is a ModelForm that is used to create a new PlayerWithTeam object.
 class PlayerWithTeamForm(forms.ModelForm):
     class Meta:
-        model = Player
+        model = ProfileInCup
         fields = ('name', 'team',)
 
 
 # The PlayerForm class is a ModelForm class that is used to create a form that can be used to create a new Player object
 class PlayerForm(forms.ModelForm):
     class Meta:
-        model = Player
+        model = ProfileInCup
         fields = ('name',)
 
     def clean_player(self):

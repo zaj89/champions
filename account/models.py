@@ -22,7 +22,8 @@ class ProfileInCup(models.Model):
     class Meta:
         verbose_name = _("ProfileInCup")
         verbose_name_plural = _("ProfileInCups")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_in_profile_cup')
+    name = models.CharField(max_length=30, blank=False, verbose_name='nazwa gracza', default='')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_in_profile_cup', null=True)
     team = models.CharField(max_length=20)
     cup = models.ForeignKey(Cup, on_delete=models.CASCADE, related_name='cup_in_profile_cup')
     wins = models.PositiveSmallIntegerField(verbose_name='Zwycięstwa', default=0)
@@ -32,6 +33,7 @@ class ProfileInCup(models.Model):
     goals_losted = models.PositiveSmallIntegerField(verbose_name='Bramki stracone', default=0)
     goals_bilans = models.SmallIntegerField(verbose_name='Bilans bramek', default=0)
     points = models.SmallIntegerField(verbose_name='Punkty', default=0)
+    group = models.ForeignKey(Cup, on_delete=models.CASCADE, related_name='group', default='', null=True)
 
     def __str__(self):
-        return self.user.username + self.cup.name
+        return self.name

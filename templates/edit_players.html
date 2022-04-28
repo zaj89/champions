@@ -18,9 +18,15 @@
             Rejerstracja:
                             {% if cup.registration == 'Otwarta' %}
                                 Otwarta
-                                    {% if cup.number_of_players >= 4 and cup.author == request.user %}
-                                        <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
-                                    {% endif %}
+                                    {% if cup.type == 'Puchar' or cup.type == '1 mecz' or cup.type == '2 mecze'%}
+                                                {% if cup.number_of_players >= 4 %}
+                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
+                                                {% endif %}
+                                        {% elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze'%}
+                                                {% if cup.number_of_players >= 8 %}
+                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
+                                                {% endif %}
+                                        {% endif %}
                             {% else %}
                                 Zamknięta
                             {% endif %}
@@ -250,13 +256,11 @@
                                   {% if player in cup.players.all %}
                                         <a type="submit" class="btn btn-secondary">Zapisany</a>
                                   {% else %}
-                                        {% if invitations_sent %}
                                                 {% if player_invited %}
                                                     <a type="submit" class="btn btn-secondary">Zaproszonie wysłano</a>
                                                 {% else %}
                                                     <a type="submit" class="btn btn-secondary" href="{% url 'send_invite' cup.id player.id %}" onclick="return confirm('Jesteś pewien?')">Zaproś</a>
                                                 {% endif %}
-                                        {% endif %}
                                   {% endif %}
                       {% endif %}
                     </td>
@@ -288,10 +292,6 @@
                 <tr align="center">
                     <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.id }}</span></th>
                     <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.first_name }}</span></th>
-
-                      {% if cup.registration == 'Otwarta' and request.user == invite.to_player %}
-                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
-                      {% endif %}
                     <th scope="row">
                         <a class="btn btn-danger" href="{% url 'reject_invite' invite.cup.id invite.to_player.id %}">Anuluj</a>
                     </th>
@@ -371,11 +371,14 @@
                                       {% endif %}
                                             {% endfor %}
                     {% endif %}
-                      {% if cup.registration == 'Otwarta' and request.user == player %}
-                      <td>
-                            <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
-                      </td>
-                      {% endif %}
+                          {% if cup.registration == 'Otwarta' and request.user == player %}
+                                  <td>
+                                        <a type="submit" class="btn btn-secondary" href="{% url 'left_the_cup' cup.id %}" onclick="return confirm('Jesteś pewien?')">Zrezygnuj</a>
+                                  </td>
+                           {% else %}
+                                  <td>
+                                  </td>
+                          {% endif %}
 
                 </tr>
                     {% endfor %}

@@ -1,11 +1,5 @@
 from django.contrib import admin
-from .models import Player, Match, Cup, Round, Invite
-
-
-@admin.register(Player)
-class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
+from .models import Match, Cup, Round, Invite
 
 
 @admin.register(Match)

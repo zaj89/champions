@@ -5,41 +5,14 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 
-# The Player class is a model that contains the information about a player
-class Player(models.Model):
-    class Meta:
-        verbose_name = _("Gracz")
-        verbose_name_plural = _("Gracze")
-
-    name = models.CharField(max_length=30, blank=False, verbose_name='nazwa gracza', default='')
-    wins = models.PositiveSmallIntegerField(verbose_name='Zwycięstwa', default=0)
-    draws = models.PositiveSmallIntegerField(verbose_name='Remisy', default=0)
-    losses = models.PositiveSmallIntegerField(verbose_name='Porażki', default=0)
-    goals_scored = models.PositiveSmallIntegerField(verbose_name='Bramki zdobyte', default=0)
-    goals_losted = models.PositiveSmallIntegerField(verbose_name='Bramki stracone', default=0)
-    goals_bilans = models.SmallIntegerField(verbose_name='Bilans bramek', default=0)
-    points = models.SmallIntegerField(verbose_name='Punkty', default=0)
-    cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup', default='')
-    group = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='group', default='', null=True)
-    team = models.CharField(max_length=30, blank=True, verbose_name='Drużyna', default='', null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True)
-
-    def clean(self):
-        if len(str(self.name)) > 30:
-            raise ValidationError("Maksymalna długość nazwy gracza to 30 znaków.")
-
-    def __str__(self):
-        return self.name
-
-
 # This is a class that defines a Match object
 class Match(models.Model):
     class Meta:
         verbose_name = _("Mecz")
         verbose_name_plural = _("Mecze")
 
-    player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player1', verbose_name='Gracz 1')
-    player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player2', verbose_name='Gracz 2')
+    player1 = models.ForeignKey('account.ProfileInCup', on_delete=models.CASCADE, related_name='player1', verbose_name='Gracz 1')
+    player2 = models.ForeignKey('account.ProfileInCup', on_delete=models.CASCADE, related_name='player2', verbose_name='Gracz 2')
     result1 = models.PositiveSmallIntegerField(verbose_name='Wynik gospodarza', default=None, null=True)
     result2 = models.PositiveSmallIntegerField(verbose_name='Wynik gościa', default=None, null=True)
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_in_match', default='')
@@ -113,7 +86,7 @@ class Cup(models.Model):
     players = models.ManyToManyField(User, related_name='players')
     groupanothercup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='group_cups', default=None,
                                         null=True)
-    promotion = models.ManyToManyField(Player, related_name='promotion_group', verbose_name='Awans', blank=True)
+    promotion = models.ManyToManyField('account.ProfileInCup', related_name='promotion_group', verbose_name='Awans', blank=True)
     cupgenerated = models.BooleanField(verbose_name='Wygenerowano puchar', default=False)
     archived = models.BooleanField(verbose_name='Zarchiwizowano', default=False)
 
@@ -133,9 +106,9 @@ class Round(models.Model):
 
     name = models.CharField(max_length=50, blank=False, verbose_name='Nazwa rundy', default='')
     cup = models.ForeignKey('Cup', on_delete=models.CASCADE, related_name='cup_in_round', default='')
-    promotion = models.ManyToManyField(Player, related_name='promotion_round', verbose_name='Awans', blank=True)
-    players = models.ManyToManyField(Player, related_name='players', verbose_name='Uczestnicy', blank=True)
-    pausing = models.ForeignKey(Player, on_delete=models.CASCADE, verbose_name='Pauzuje', null=True)
+    promotion = models.ManyToManyField('account.ProfileInCup', related_name='promotion_round', verbose_name='Awans', blank=True)
+    players = models.ManyToManyField('account.ProfileInCup', related_name='players', verbose_name='Uczestnicy', blank=True)
+    pausing = models.ForeignKey('account.ProfileInCup', on_delete=models.CASCADE, verbose_name='Pauzuje', null=True)
     match = models.PositiveSmallIntegerField(verbose_name='Runda meczy', null=True)
 
     def __str__(self):
