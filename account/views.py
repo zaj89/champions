@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login
 from cup.models import Cup, Invite
 from account.models import Profile
-from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileForm
+from .forms import LoginForm, UserEditForm, ProfileForm
 from cup.models import Match
 
 
@@ -51,24 +52,18 @@ def user_login(request):
 
 def register(request):
     if request.method == "POST":
-        user_form = UserRegistrationForm(request.POST)
-        profile_form = ProfileForm(request.POST)
-        if user_form.is_valid() and profile_form.is_valid():
+        user_form = UserCreationForm(request.POST)
+        if user_form.is_valid():
             new_user = user_form.save(commit=False)
-            new_user.set_password(user_form.cleaned_data['password'])
             new_user.save()
-            new_profile = profile_form.save(commit=False)
-            new_profile.user = new_user
-            new_profile.save()
+            Profile.objects.create(user=new_user)
             messages.success(request, 'Konto zostało utworzone. Możesz się zalogować.')
             return HttpResponseRedirect('/account/login/')
-        messages.success(request, 'Błąd w formularzu..')
-        return HttpResponseRedirect('/account/login/')
+        else:
+            return render(request, 'account/register.html', {'user_form': user_form})
     else:
-        user_form = UserRegistrationForm()
-        profile_form = ProfileForm()
-        return render(request, 'account/register.html', {'user_form': user_form,
-                                                         'profile_form': profile_form})
+        user_form = UserCreationForm()
+        return render(request, 'account/register.html', {'user_form': user_form})
 
 
 @login_required

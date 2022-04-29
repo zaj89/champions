@@ -6,10 +6,13 @@
 {% block content %}
 <h4>Edycja użytkownika</h4>
 <p>Ustawienia konta możesz zmienić za pomocą poniższego formularza:</p>
-<form action="." method="post" enctype="multipart/form-data">
+<center>
+<form action="." method="post" enctype="multipart/form-data" style="max-width:600px">
     {{ user_form|crispy }}
     {{ profile_form|crispy }}
     {% csrf_token %}
+    <br>
     <p><input class="btn btn-secondary" type="submit" value="Zapisz zmiany"></p>
 </form>
+    </center>
 {% endblock %}

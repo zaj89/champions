@@ -6,12 +6,13 @@
 {% block content %}
 <h4>Utwórz konto</h4>
 <p>Wypełnij poniższy formularz, aby się zarejestrować.</p>
-<form action="." method="post">
+<center>
+<form action="." method="post" style="max-width:600px">
     {{ user_form|crispy }}
     {{ profile_form|crispy }}
     {% csrf_token %}
     <br>
     <p><input class="btn btn-secondary" type="submit" value="Utwórz konto"></p>
 </form>
-
+</center>
 {% endblock %}

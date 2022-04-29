@@ -105,7 +105,7 @@
                 <div class="btn-group" style="margin:5px">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     {% if request.user.is_authenticated %}
-                      {{ request.user.first_name }}
+                      {{ request.user.username }}
                     {% else %}
                       Niezalogowany
                     {% endif %}
