@@ -27,6 +27,10 @@ class PlayerForm(forms.ModelForm):
         model = ProfileInCup
         fields = ('name',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'autofocus': 'True'})
+
     def clean_player(self):
         if len(str(self.cleaned_data['name'])) > 30:
             raise forms.ValidationError("Maksymalna długość nazwy gracza to 30 znaków.")

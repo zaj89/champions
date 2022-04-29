@@ -1,5 +1,5 @@
 import pytest
-from cup.models import Cup, Match, Player
+from cup.models import Cup
 
 
 @pytest.mark.django_db

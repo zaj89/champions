@@ -55,7 +55,7 @@
                   </p>
                 </div>
                 {% csrf_token %}
-                <center><p><button type="submit" class="btn btn-secondary">Dodaj</button></p></center>
+                <center><p><button type="submit" class="btn btn-success">Dodaj</button></p></center>
             </form>
         {% else %}
             <form action="" method="post">
@@ -65,7 +65,7 @@
                   </p>
                 </div>
                 {% csrf_token %}
-                <center><p><button type="submit" class="btn btn-secondary">Dodaj</button></p></center>
+                <center><p><button type="submit" class="btn btn-success">Dodaj</button></p></center>
             </form>
         {% endif %}
     {% else %}
@@ -250,7 +250,13 @@
                 <tr align="center">
                     <th scope="row"><span class="btn btn-secondary">{{ player.id }}</span></th>
                     <th scope="row"><span class="btn btn-secondary">{{ player.first_name }}</span></th>
-
+                    {% if cup.choosing_teams == True %}
+                            {% for profile in profiles.all %}
+                                {% if profile.user == player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                           <td>
                       {% if cup.registration == 'Otwarta' and request.user == cup.author %}
                                   {% if player in cup.players.all %}
@@ -292,6 +298,13 @@
                 <tr align="center">
                     <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.id }}</span></th>
                     <th scope="row"><span class="btn btn-secondary">{{ invite.to_player.first_name }}</span></th>
+                    {% if cup.choosing_teams == True %}
+                            {% for profile in profiles.all %}
+                                {% if profile.user == invite.to_player %}
+                                    <th scope="row"><span class="btn btn-secondary">{{ profile.team }}</span></th>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     <th scope="row">
                         <a class="btn btn-danger" href="{% url 'reject_invite' invite.cup.id invite.to_player.id %}">Anuluj</a>
                     </th>

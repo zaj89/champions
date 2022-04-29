@@ -52,11 +52,11 @@
                                 Otwarta
                                         {% if cup.type == 'Puchar' or cup.type == '1 mecz' or cup.type == '2 mecze'%}
                                                 {% if cup.number_of_players >= 4 %}
-                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
+                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-success">Zamknij</a>
                                                 {% endif %}
                                         {% elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze'%}
                                                 {% if cup.number_of_players >= 8 %}
-                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-secondary">Zamknij</a>
+                                                    <a href="{% url 'close_registration' cup.id %}" class="btn btn-success">Zamknij</a>
                                                 {% endif %}
                                         {% endif %}
                             {% else %}
