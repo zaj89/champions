@@ -20,73 +20,90 @@ def create_profile():
 
 @pytest.fixture
 def create_cup(create_user):
-    cup = Cup.objects.create(name='test', type='Puchar', author=create_user, choosing_teams=True)
+    cup = Cup.objects.create(
+        name="test", type="Puchar", author=create_user, choosing_teams=True
+    )
     yield cup
 
 
 @pytest.mark.django_db
 def test_create_cup1(create_user):
-    Cup.objects.create(name='test', type='Puchar', author=create_user, choosing_teams=True)
+    Cup.objects.create(
+        name="test", type="Puchar", author=create_user, choosing_teams=True
+    )
     assert Cup.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_create_cup2(create_user):
-    Cup.objects.create(name='test', type='Puchar', author=create_user, choosing_teams=False)
+    Cup.objects.create(
+        name="test", type="Puchar", author=create_user, choosing_teams=False
+    )
     assert Cup.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_create_cup3(create_user):
-    Cup.objects.create(name='test', type='GrupyPuchar1mecz', author=create_user, choosing_teams=True)
+    Cup.objects.create(
+        name="test", type="GrupyPuchar1mecz", author=create_user, choosing_teams=True
+    )
     assert Cup.objects.count() == 1
-
 
 
 @pytest.mark.django_db
 def test_create_cup4(create_user):
-    Cup.objects.create(name='test', type='GrupyPuchar1mecz', author=create_user, choosing_teams=False)
+    Cup.objects.create(
+        name="test", type="GrupyPuchar1mecz", author=create_user, choosing_teams=False
+    )
     assert Cup.objects.count() == 1
-
 
 
 @pytest.mark.django_db
 def test_create_cup5(create_user):
-    Cup.objects.create(name='test', type='GrupyPuchar2mecze', author=create_user, choosing_teams=True)
+    Cup.objects.create(
+        name="test", type="GrupyPuchar2mecze", author=create_user, choosing_teams=True
+    )
     assert Cup.objects.count() == 1
-
 
 
 @pytest.mark.django_db
 def test_create_cup6(create_user):
-    Cup.objects.create(name='test', type='GrupyPuchar2mecze', author=create_user, choosing_teams=False)
+    Cup.objects.create(
+        name="test", type="GrupyPuchar2mecze", author=create_user, choosing_teams=False
+    )
     assert Cup.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_create_cup7(create_user):
-    Cup.objects.create(name='test', type='1 mecz', author=create_user, choosing_teams=True)
+    Cup.objects.create(
+        name="test", type="1 mecz", author=create_user, choosing_teams=True
+    )
     assert Cup.objects.count() == 1
-
 
 
 @pytest.mark.django_db
 def test_create_cup8(create_user):
-    Cup.objects.create(name='test', type='1 mecz', author=create_user, choosing_teams=False)
+    Cup.objects.create(
+        name="test", type="1 mecz", author=create_user, choosing_teams=False
+    )
     assert Cup.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_create_cup9(create_user):
-    Cup.objects.create(name='test', type='2 mecze', author=create_user, choosing_teams=True)
+    Cup.objects.create(
+        name="test", type="2 mecze", author=create_user, choosing_teams=True
+    )
     assert Cup.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_create_cup10(create_user):
-    Cup.objects.create(name='test', type='2 mecze', author=create_user, choosing_teams=False)
+    Cup.objects.create(
+        name="test", type="2 mecze", author=create_user, choosing_teams=False
+    )
     assert Cup.objects.count() == 1
-
 
 
 @pytest.mark.django_db
@@ -95,4 +112,3 @@ def test_delete_cup(create_cup):
     assert Cup.objects.count() == 1
     cup_to_del.delete()
     assert Cup.objects.count() == 0
-

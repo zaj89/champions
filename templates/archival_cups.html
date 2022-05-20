@@ -1,0 +1,46 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h4>Archiwum rozgrywek</h4>
+<hr>
+
+{% if cups %}
+        <p>Liczba rozgrywek w archiwum: {{ count }}</p>
+        <br>
+        <table class="table table-striped table-dark">
+        <thead>
+        <tr>
+          <th scope="col">Nazwa</th>
+          <th scope="col">Typ</th>
+          <th scope="col">Liczba graczy</th>
+          <th scope="col" colspan="2">Akcja</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for cup in page.object_list %}
+        <tr>
+            <th scope="row"><span class="btn btn-secondary">{{ cup.name }}</span></th>
+            <th scope="row"><span class="btn btn-secondary">{{ cup.type }}</span></th>
+          <td><span class="btn btn-secondary">{{ cup.number_of_players }}</span></td>
+
+          <td>
+              {% if cup.author == request.user %}
+                <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Podgląd</a>
+              {% endif %}
+                  <a type="submit" class="btn btn-secondary" href="{% url 'edit_players' cup.id %}">Lista graczy</a>
+              {% if cup.author == request.user %}
+                  <a type="submit" class="btn btn-danger" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+              {% endif %}
+          </td>
+        </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+
+{% else %}
+<p class="btn btn-secondary">Nie ma żadnych rozgrywek w archiwum.</p>
+{% endif %}
+
+{% endblock %}

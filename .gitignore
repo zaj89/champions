@@ -1,7 +1,9 @@
 *.pyc
 *~
 __pycache__
-myvenv
+venv
 db.sqlite3
-/static
 .DS_Store
+COPY_db.sqlite3
+PyWhatKit_DB.txt
+*migrations*

@@ -106,10 +106,8 @@
 
         {% if cup.type == '1 mecz' or cup.type == '2 mecze' %}
             {% if cup.registration == 'Zamknięta' and not match_not_played %}
-                    {% if cup.author == request.user %}
-                            {% if cup.type == '1 mecz'  or cup.type == '2 mecze' %}
-                                <a href="{% url 'generate_round' cup.id %}" class="btn btn-success">Generuj</a>
-                            {% endif %}
+                    {% if cup.author == request.user and not cup.archived %}
+                            <a href="{% url 'generate_round' cup.id %}" class="btn btn-success">Generuj</a>
                     {% endif %}
             {% else %}
                     {% if match_not_played %}
@@ -117,7 +115,7 @@
             {% endif %}
 {% elif cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' or cup.type == 'Puchar' %}
         {% if cup.registration == 'Zamknięta' and not match_in_groups_not_played and not match_in_cup_not_played and not match_not_played %}
-                {% if cup.author == request.user and not cup.finished %}
+                {% if cup.author == request.user and not cup.finished and not cup.archived %}
                         <a href="{% url 'generate_round' cup.id %}" class="btn btn-success">Generuj</a>
                 {% endif %}
         {% else %}
