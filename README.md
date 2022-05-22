@@ -7,6 +7,11 @@
 Application for organizing cup competitions.
 
 
+## In constructions
+
+- async chat for players in online cup.
+- notification whatsup
+
 
 ## Deployment
 
