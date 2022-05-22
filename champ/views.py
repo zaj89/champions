@@ -4,8 +4,7 @@ from .functions import if_user_authenticated_add_variables_menu
 
 def index(request):
     context = {}
-    if request.user.is_authenticated:
-        context.update(if_user_authenticated_add_variables_menu(request))
+    context.update(if_user_authenticated_add_variables_menu(request))
     return render(
         request,
         "index.html",
@@ -15,8 +14,7 @@ def index(request):
 
 def help(request):
     context = {}
-    if request.user.is_authenticated:
-        context.update(if_user_authenticated_add_variables_menu(request))
+    context.update(if_user_authenticated_add_variables_menu(request))
     return render(
         request,
         "help.html",
