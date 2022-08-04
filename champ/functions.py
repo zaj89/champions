@@ -107,6 +107,8 @@ def if_user_authenticated_add_variables_menu(request):
             "matches_user_sum": matches_user_sum,
             "invites": invites,
         }
+    else:
+        return {}
 
 
 def assign_teams_from_profiles_to_profiles_in_cup(players):

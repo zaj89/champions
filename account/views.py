@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 from account.models import Profile
+from champ.functions import if_user_authenticated_add_variables_menu
 from cup.models import Cup, Invite, Match
 
 from .forms import LoginForm, ProfileForm, UserEditForm
@@ -28,49 +29,13 @@ def user_login(request):
                 return HttpResponse("Nieprawidłowe dane uwierzytelniające.")
     else:
         form = LoginForm()
-    if request.user.is_authenticated:
-        matches = Match.objects.all()
-        matches_user_to_waiting = matches.filter(
-            player2__user=request.user, finished=False, confirmed=False
-        )
-        matches_user_to_enter = matches.filter(
-            player1__user=request.user, finished=False, confirmed=False
-        )
-        matches_user_to_confirm = matches.filter(
-            player2__user=request.user, finished=True, confirmed=False
-        )
-        matches_user_sum = (
-            len(matches_user_to_confirm)
-            + len(matches_user_to_enter)
-            + len(matches_user_to_waiting)
-            + len(invites)
-        )
-        last_cup_online = (
-            Cup.objects.filter(author_id=request.user.id)
-            .exclude(declarations="Ręczna")
-            .exclude(archived=True)
-            .last()
-        )
-        last_cup_offline = (
-            Cup.objects.filter(author_id=request.user.id, declarations="Ręczna")
-            .exclude(archived=True)
-            .last()
-        )
+        context = {"form": form}
+        context.update(if_user_authenticated_add_variables_menu(request))
         return render(
             request,
-            "account/login.html",
-            {
-                "form": form,
-                "last_cup_online": last_cup_online,
-                "last_cup_offline": last_cup_offline,
-                "matches_user_to_enter": matches_user_to_enter,
-                "matches_user_to_confirm": matches_user_to_confirm,
-                "matches_user_to_waiting": matches_user_to_waiting,
-                "matches_user_sum": matches_user_sum,
-            },
+            "registration/login.html",
+            context,
         )
-    else:
-        return render(request, "account/login.html", {"form": form})
 
 
 def register(request):
@@ -86,29 +51,13 @@ def register(request):
             return render(request, "account/register.html", {"user_form": user_form})
     else:
         user_form = UserCreationForm()
+        user_profile_form = UserEditForm()
         return render(request, "account/register.html", {"user_form": user_form})
 
 
 @login_required
 def edit(request):
     profile = Profile.objects.get(user=request.user)
-    invites = Invite.objects.filter(to_player=request.user, status="Wysłano")
-    matches = Match.objects.all()
-    matches_user_to_waiting = matches.filter(
-        player2__user=request.user, finished=False, confirmed=False
-    )
-    matches_user_to_enter = matches.filter(
-        player1__user=request.user, finished=False, confirmed=False
-    )
-    matches_user_to_confirm = matches.filter(
-        player2__user=request.user, finished=True, confirmed=False
-    )
-    matches_user_sum = (
-        len(matches_user_to_confirm)
-        + len(matches_user_to_enter)
-        + len(matches_user_to_waiting)
-        + len(invites)
-    )
     if request.method == "POST":
         user_form = UserEditForm(instance=request.user, data=request.POST)
         profile_form = ProfileForm(instance=profile, data=request.POST)
@@ -119,18 +68,13 @@ def edit(request):
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileForm(instance=profile)
+    context = {"user_form": user_form,
+               "profile_form": profile_form,}
+    context.update(if_user_authenticated_add_variables_menu(request))
     return render(
         request,
         "account/edit.html",
-        {
-            "user_form": user_form,
-            "profile_form": profile_form,
-            "matches_user_to_enter": matches_user_to_enter,
-            "matches_user_to_confirm": matches_user_to_confirm,
-            "matches_user_to_waiting": matches_user_to_waiting,
-            "matches_user_sum": matches_user_sum,
-            "invites": invites,
-        },
+        context,
     )
 
 
@@ -138,49 +82,13 @@ def edit(request):
 def profile(request, user_id):
     user = User.objects.get(id=user_id)
     profile = Profile.objects.get(user=user)
-    matches = Match.objects.all()
-    invites = Invite.objects.filter(to_player=request.user, status="Wysłano")
-    if request.user.is_authenticated:
-        matches_user_to_waiting = matches.filter(
-            player2__user=request.user, finished=False, confirmed=False
-        )
-        matches_user_to_enter = matches.filter(
-            player1__user=request.user, finished=False, confirmed=False
-        )
-        matches_user_to_confirm = matches.filter(
-            player2__user=request.user, finished=True, confirmed=False
-        )
-        matches_user_sum = (
-            len(matches_user_to_confirm)
-            + len(matches_user_to_enter)
-            + len(matches_user_to_waiting)
-            + len(invites)
-        )
-        last_cup_online = (
-            Cup.objects.filter(author_id=request.user.id)
-            .exclude(declarations="Ręczna")
-            .exclude(archived=True)
-            .last()
-        )
-        last_cup_offline = (
-            Cup.objects.filter(author_id=request.user.id, declarations="Ręczna")
-            .exclude(archived=True)
-            .last()
-        )
-        return render(
-            request,
-            "account/profile.html",
-            {
-                "user": user,
-                "profile": profile,
-                "last_cup_online": last_cup_online,
-                "last_cup_offline": last_cup_offline,
-                "matches_user_to_enter": matches_user_to_enter,
-                "matches_user_to_confirm": matches_user_to_confirm,
-                "matches_user_to_waiting": matches_user_to_waiting,
-                "matches_user_sum": matches_user_sum,
-                "invites": invites,
-            },
-        )
-    else:
-        return render(request, "account/profile.html", {"user": user})
+    context = {
+            "user": user,
+            "profile": profile,
+        }
+    context.update(if_user_authenticated_add_variables_menu(request))
+    return render(
+        request,
+        "account/profile.html",
+        context,
+    )

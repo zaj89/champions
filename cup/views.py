@@ -324,7 +324,7 @@ def edit_players_online(request, cup_id: int):
                 "edit_players.html",
                 context,
             )
-    elif cup.declarations == "Otwarta":
+    elif cup.declarations == "Publiczna":
         return HttpResponseRedirect("/cup/dashboard/{}/edit_players".format(cup.id))
 
 
@@ -357,7 +357,7 @@ def close_registration(request, cup_id: int):
     cup = Cup.objects.get(id=cup_id)
     players = list(ProfileInCup.objects.filter(cup=cup))
     if cup.registration == "Otwarta":
-        if cup.declarations == "Otwarta":
+        if cup.declarations == "Publiczna":
             if cup.type == "Puchar":
                 calculate_len_rounds(request, cup, players)
                 assign_teams_from_profiles_to_profiles_in_cup(players)
@@ -393,7 +393,6 @@ def close_registration(request, cup_id: int):
                     shuffle(players)
                     cup.registration = "Zamknięta"
                     ordering_players(cup, players)
-
                     messages.success(request, "Rejestracja została zamknięta.")
                     return HttpResponseRedirect(f"/cup/dashboard/{cup.id}/")
             elif cup.type == "2 mecze":
@@ -1374,12 +1373,19 @@ def panel(request):
     """
     cups = (
         Cup.objects.exclude(declarations="Ręczna")
-        .filter(declarations="Na zaproszenie", players=request.user)
+        .filter(registration="Zamknięta", players=request.user)
+        .exclude(archived=True, )
+        .order_by("-id")
+    )
+    cupsopen = (
+        Cup.objects.exclude(declarations="Ręczna")
+        .filter(registration="Otwarta")
         .exclude(archived=True)
         .order_by("-id")
     )
     context = {
         "cups": cups,
+        "cupsopen": cupsopen
     }
     context.update(if_user_authenticated_add_variables_menu(request))
     return render(
@@ -1447,7 +1453,7 @@ def list_matches_to_enter(request):
     matches = (
         Match.objects.filter(Q(player1__in=player) | Q(player2__in=player))
         .filter(confirmed=False)
-        .filter(Q(cup__declarations="Otwarta") | Q(cup__declarations="Na zaproszenie"))
+        .filter(Q(cup__declarations="Publiczna") | Q(cup__declarations="Na zaproszenie"))
     )
     context = {
         "matches": matches,
@@ -1590,7 +1596,7 @@ def confirm_the_result(request, match_id: int):
     match = Match.objects.get(id=match_id)
     cup = Cup.objects.get(id=match.cup.id)
     actual_round = cup.actual_round
-    if cup.actual_round == match.round:
+    if cup.actual_round == match.round or cup.league_generated:
         if (
             match.player2.user == request.user
             and not match.confirmed

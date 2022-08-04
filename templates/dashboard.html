@@ -41,8 +41,8 @@
         Rodzaj rejestracji:
         {% if cup.declarations == 'Ręczna' %}
         Ręczna (Offline)
-        {% elif cup.declarations == 'Otwarta' %}
-        Otwarta (Online)
+        {% elif cup.declarations == 'Publiczna' %}
+        Publiczna (Online)
         {% elif cup.declarations == 'Na zapraszenie' %}
         Na zaproszenie (Online)
         {% endif %}
@@ -173,7 +173,7 @@
     {% for player in players %}
         <tr>
             <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
-          <td><span class="btn btn-secondary">{{ player.name }}</span></td>
+          <td><span class="btn btn-secondary">{{ player.user.username }}</span></td>
                     {% if cup.choosing_teams == True %}
                             {% if cup.registration == 'Zamknięta' %}
 
@@ -230,7 +230,7 @@
         {% if match.round.name == round.name %}
         <tr>
             <th scope="row" width="22.5%"><span></span></th>
-            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+            <td width="20%"><span class="btn btn-secondary">{{ match.player1.user.username }}</span></td>
           <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
                                                                 {{ match.result1 }} : {{ match.result2 }}
                                                           {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
@@ -238,7 +238,7 @@
                                                           {% else %}
                                                                 Nie rozegrano
                                                           {% endif %}</span></td>
-          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+          <td width="20%"><span class="btn btn-secondary">{{ match.player2.user.username }}</span></td>
           <td width="45%">
               {% if cup.author == request.user %}
                         {% if not match.finished or not match.confirmed %}
@@ -290,7 +290,7 @@
             {% if match.round.name == round.name %}
             <tr>
                 <th scope="row" width="22.5%"><span></span></th>
-                <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+                <td width="20%"><span class="btn btn-secondary">{{ match.player1.user.username }}</span></td>
               <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
                                                                     {{ match.result1 }} : {{ match.result2 }}
                                                               {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
@@ -298,7 +298,7 @@
                                                               {% else %}
                                                                     Nie rozegrano
                                                               {% endif %}</span></td>
-              <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+              <td width="20%"><span class="btn btn-secondary">{{ match.player2.user.username }}</span></td>
               <td width="45%">
                   {% if cup.author == request.user %}
                             {% if match.finished == False or not match.confirmed %}
@@ -366,7 +366,7 @@
             {% for player in players|in_group:group %}
         <tr>
             <th scope="row"><span class="btn btn-secondary">{{ forloop.counter }}</span></th>
-          <td><span class="btn btn-secondary">{{ player.name }}</span></td>
+          <td><span class="btn btn-secondary">{{ player.user.username }}</span></td>
                     {% if cup.choosing_teams == True %}
                             {% if cup.registration == 'Zamknięta' %}
 
@@ -423,7 +423,7 @@
                         {% if match.round == round and group == match.cup %}
                         <tr>
                             <th scope="row" width="22.5%"><span></span></th>
-                            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+                            <td width="20%"><span class="btn btn-secondary">{{ match.player1.user.username }}</span></td>
                           <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
                                                                                 {{ match.result1 }} : {{ match.result2 }}
                                                                           {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
@@ -431,7 +431,7 @@
                                                                           {% else %}
                                                                                 Nie rozegrano
                                                                           {% endif %}</span></td>
-                          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+                          <td width="20%"><span class="btn btn-secondary">{{ match.player2.user.username }}</span></td>
                           <td width="45%">
                               {% if cup.author == request.user %}
                                         {% if match.finished == False or not match.confirmed %}

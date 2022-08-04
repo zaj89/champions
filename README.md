@@ -45,7 +45,7 @@ Przypadek taki sam jak wyżej z tym, że rozgrywamy po 2 mecze.
 ### Ręczna(Offline):
 Typ ręczny polega na wprowadzaniu graczy z jednego formularza. Zalecana opcja przy spotkaniach offline przy jednym komputerze.
 
-### Otwarta(Online):
+### Publiczna(Online):
 W trybie otwartym użytkownik zarejestrowanego konta tworzy rozgrywki z automatycznie ustawioną otwartą rejestracją. Inni użytkownicy chcący wziąć udział w rozgrywkach muszą zalogować się na swoje konto, przejść w zakładkę Online--> Panel i znaleźć na liście turniej organizatora, a następnie kliknąć przycisk "Dołącz", by wpisać się na listę uczestników. Kiery organizator uzna to za stosowe w zakładce Online--> Zarządzaj i przy aktualnych rozgrywkach kliknąć przycisk "Zarządzaj", który przekieruje go do panelu administracyjnego rozgrywek. Aby zamknąć rejestrację musi kliknąć przycisk "Zamknij rejestracje". Kiedy wszyscy są gotowi organizator w swoim panelu klika "generuj rozgrywki".
 
 ### Na zaproszenie(Online):

@@ -126,7 +126,7 @@ class Cup(models.Model):
         (
             "Online",
             (
-                ("Otwarta", "Otwarta"),
+                ("Publiczna", "Publiczna"),
                 ("Na zaproszenie", "Na zaproszenie"),
             ),
         ),

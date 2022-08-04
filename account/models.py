@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from phonenumber_field.modelfields import PhoneNumberField
 
 from cup.models import Cup
 
@@ -13,9 +12,6 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     team = models.CharField(max_length=20)
-    phone = PhoneNumberField(
-        null=True, blank=True, unique=True, verbose_name="Telefon (+48XXXXXXXXX)"
-    )
 
     def __str__(self):
         return self.user.username

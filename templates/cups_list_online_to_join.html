@@ -96,7 +96,105 @@
         </table>
 
 {% else %}
-<p class="btn btn-secondary">Nie ma w systemie żadnych rozgrywek w których bierzesz udział.</p>
+<p class="btn btn-secondary">Brak</p>
+{% endif %}
+<h4>Lista rozgrywek z otwartą rejestracją:</h4><br>
+{% if cupsopen %}
+
+        <table class="table table-striped table-dark">
+        <thead>
+        <tr>
+          <th scope="col">Nazwa</th>
+          <th scope="col">Liczba graczy</th>
+          <th scope="col">Aktualny etap</th>
+          <th scope="col" colspan="2">Akcja</th>
+        </tr>
+        </thead>
+        <tbody>
+    {% for cup in cupsopen %}
+        <tr>
+            <th scope="row"><span class="btn btn-secondary">{{ cup.name }}</span></th>
+          <td><span class="btn btn-secondary">{{ cup.players.all|length }}</span></td>
+          <td><span class="btn btn-secondary">
+
+              {% if cup.type == '1 mecz' or cup.type == '2 mecze' %}
+                        {% if not cup.actual_round  %}
+                                {% if cup.registration == 'Otwarta' %}
+                                        Rejestracja
+                                {% else %}
+                                        Nie rozpoczęte
+                                {% endif %}
+                       {% else %}
+                                {% if cup.finished %}
+                                        Zakończony
+                                {% else %}
+                                        Trwa
+                                {% endif %}
+                       {% endif %}
+              {% endif %}
+
+              {% if cup.type == 'Puchar' %}
+                        {% if cup.actual_round == None  %}
+                            {% if cup.registration == 'Otwarta' %}
+                                Rejestracja
+                            {% else %}
+                                Nie rozpoczęte
+                            {% endif %}
+                       {% else %}
+                            {% if cup.finished %}
+                                Zakończony
+                            {% else %}
+                                {{ cup.actual_round }}
+                            {% endif %}
+                          {% endif %}
+              {% endif %}
+
+
+                {% if cup.type == 'GrupyPuchar1mecz' or cup.type == 'GrupyPuchar2mecze' %}
+                                        {% if not cup.league_generated %}
+                                            Nie rozpoczęty
+                                        {% elif match_in_groups_not_played %}
+                                            Faza grupowa (trwa)
+                                        {% elif not match_in_groups_not_played and not cup.cupgenerated %}
+                                            Faza grupowa (zakończona)
+                                        {% elif not match_in_groups_not_played and cup.cupgenerated and match_in_cup_not_played %}
+                                            Faza pucharowa (trwa)
+                                        {% elif not match_in_groups_not_played and cup.cupgenerated and not match_in_cup_not_played %}
+                                            Zakończony
+                                        {% endif %}
+
+
+                {% endif %}
+
+          </span></td>
+          <td>
+              {% if cup.registration == 'Otwarta' %}
+                    {% if cup.declarations != 'Ręczna' %}
+                            {% if request.user not in cup.players.all %}
+                                 <a type="submit" class="btn btn-success" href="{% url 'join_the_cup' cup.id %}">Dołącz</a>
+                            {% else %}
+                                 <a type="submit" class="btn btn-danger" href="{% url 'left_the_cup' cup.id %}">Zrezygnuj</a>
+                            {% endif %}
+                    {% endif %}
+              {% endif %}
+              {% if cup.author == request.user %}
+                <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Zarządzaj</a>
+              {% elif request.user in cup.players.all %}
+                <a type="submit" class="btn btn-secondary" href="{% url 'dashboard' cup.id %}">Podgląd</a>
+              {% endif %}
+                  <a type="submit" class="btn btn-secondary" href="{% url 'edit_players_online' cup.id %}">Lista graczy</a>
+              {% if cup.author == request.user %}
+                  <a type="submit" class="btn btn-danger" href="{% url 'delete' cup.id %}" onclick="return confirm('Jesteś pewien?')">Skasuj</a>
+              {% endif %}
+
+          </td>
+        </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+
+{% else %}
+<p class="btn btn-secondary">Brak</p>
 {% endif %}
 
 {% if invites %}
