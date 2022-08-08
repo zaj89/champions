@@ -26,9 +26,9 @@
             <td width="20%"><span class="btn btn-secondary">{{ match.cup.name }}</span></td>
             <td width="20%"><span class="btn btn-secondary">{{ match.cup.type }}</span></td>
             <td width="20%"><span class="btn btn-secondary">{{ match.round.name }}</span></td>
-            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
+            <td width="20%"><span class="btn btn-secondary">{{ match.player1.user.username }}</span></td>
           <td width="15%"><span class="btn btn-secondary">{% if match.finished and not match.confirmed %}Niepotwierdzony ({{ match.result1 }}:{{ match.result2 }}){% elif not match.finished and not match.confirmed %}Nierozegrany{% else %}{{ match.result1 }} : {{ match.result2 }}{% endif %}</span></td>
-          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
+          <td width="20%"><span class="btn btn-secondary">{{ match.player2.user.username }}</span></td>
 
         </tr>
         {% endif %}
