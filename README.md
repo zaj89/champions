@@ -18,7 +18,7 @@ Application for organizing cup competitions.
 
 - [Champions](https://champions.pythonanywhere.com)
 - Account for a recruiter
-    #### login: rectruiter
+    #### login: recruiter
     #### password: testt
 # Opis Funkcji (PL)
 ## Rodzaje rozgrywek:
