@@ -118,20 +118,22 @@ def assign_teams_from_profiles_to_profiles_in_cup(players):
         player.save()
 
 
-def calculate_len_group(players):
-    if len(players) >= 128:
-        len_group = 32
-    elif len(players) >= 64:
-        len_group = 16
-    elif len(players) >= 32:
-        len_group = 8
-    elif len(players) >= 16:
-        len_group = 4
-    elif len(players) >= 8:
-        len_group = 2
+def calculate_len_group(request, cup, players):
+    if len(players) < 4 or len(players) > 256:
+        messages.success(
+            request,
+            "W wybranym trybie rozgrywek zarejestrowanych musi być najmniej 4 graczy i nie więcej niż 256",
+        )
+        return HttpResponseRedirect("/cup/dashboard/{}/edit_players".format(cup.id))
     else:
-        len_group = 2
-    return len_group
+        lengroup = {
+            range(128, 257): 32,
+            range(64, 128): 16,
+            range(32, 64): 8,
+            range(16, 32): 4,
+            range(4, 16): 2,
+        }
+        return lengroup[len(players)]
 
 
 def calculate_len_rounds(request, cup, players):
@@ -141,54 +143,48 @@ def calculate_len_rounds(request, cup, players):
             "W wybranym trybie rozgrywek zarejestrowanych musi być minimum 4 graczy.",
         )
         return HttpResponseRedirect("/cup/dashboard/{}/edit_players".format(cup.id))
-    elif len(players) == 4:
-        len_rounds = 2
-    elif 4 < len(players) < 8:
-        len_rounds = 2
-        cup.elimination_matches = len(players) - 4
-    elif len(players) == 8:
-        len_rounds = 3
-    elif 8 < len(players) < 16:
-        len_rounds = 3
-        cup.elimination_matches = len(players) - 8
-    elif len(players) == 16:
-        len_rounds = 4
-    elif 16 < len(players) < 32:
-        len_rounds = 5
-        cup.elimination_matches = len(players) - 16
-    elif len(players) == 32:
-        len_rounds = 5
-    elif 32 < len(players) < 64:
-        len_rounds = 6
-        cup.elimination_matches = len(players) - 32
-    elif len(players) == 64:
-        len_rounds = 6
-    elif 64 < len(players) < 120:
-        len_rounds = 7
-        cup.elimination_matches = len(players) - 64
     else:
-        len_rounds = 7
-    cup.len_rounds = len_rounds
-    cup.registration = "Zamknięta"
-    cup.save()
-    return len_rounds
+        lenround = {
+            range(128, 257): 32,
+            range(64, 128): 16,
+            range(32, 64): 8,
+            range(16, 32): 4,
+            range(4, 16): 2,
+        }
+        numbers_to_calculate_matches_elimination = {
+            range(5, 8): 4,
+            range(9, 16): 8,
+            range(17, 32): 16,
+            range(33, 64): 32,
+            range(65, 120): 64,
+        }
+        len_rounds = None
+        for key in lenround:
+            if len(players) in key:
+                len_rounds = lenround[key]
+        number_to_calc = None
+        for key in numbers_to_calculate_matches_elimination:
+            if len(players) in key:
+                number_to_calc = numbers_to_calculate_matches_elimination[key]
+        if len_rounds != len(players):
+            cup.elimination_matches = len(players) - number_to_calc
+        cup.len_rounds = len_rounds
+        cup.registration = "Zamknięta"
+        cup.save()
+        return len_rounds
 
 
 def round_name(players, new_round):
-    if len(players) == 2:
-        new_round.name = "Finał"
-    elif len(players) == 4:
-        new_round.name = "Półfinał"
-    elif len(players) == 8:
-        new_round.name = "Ćwierćfinał"
-    elif len(players) == 16:
-        new_round.name = "1/8 Finału"
-    elif len(players) == 32:
-        new_round.name = "1/16 Finału"
-    elif len(players) == 64:
-        new_round.name = "1/32 Finału"
-    elif len(players) == 128:
-        new_round.name = "1/64 Finału"
+    round_names = {
+        2: "Finał",
+        4: "Półfinał",
+        8: "Ćwierćfinał",
+        16: "1/8 Finału",
+        32: "1/16 Finału",
+        64: "1/32 Finału",
+        128: "1/64 Finału"
+    }
+    new_round.name = round_names[len(players)]
 
 
 def assign_stats_to_players(cup, match, actual_round):

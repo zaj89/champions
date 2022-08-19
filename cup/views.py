@@ -783,7 +783,7 @@ def generate_round(request, cup_id: int):
         elif cup.type == "GrupyPuchar1mecz":
             if not cup.league_generated:
                 players = list(ProfileInCup.objects.filter(cup=cup))
-                len_group = calculate_len_group(players)
+                len_group = calculate_len_group(request, cup, players)
                 ordering = list(cup.players_order[:-1].split(","))
                 if "pausing" in ordering:
                     ordering.remove("pausing")
@@ -977,7 +977,7 @@ def generate_round(request, cup_id: int):
         elif cup.type == "GrupyPuchar2mecze":
             if not cup.league_generated:
                 players = list(ProfileInCup.objects.filter(cup=cup))
-                len_group = calculate_len_group(players)
+                len_group = calculate_len_group(request, cup, players)
                 ordering = list(cup.players_order[:-1].split(","))
                 if "pausing" in ordering:
                     ordering.remove("pausing")

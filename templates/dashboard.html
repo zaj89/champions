@@ -230,7 +230,7 @@
         {% if match.round.name == round.name %}
         <tr>
             <th scope="row" width="22.5%"><span></span></th>
-            <td width="20%"><span class="btn btn-secondary">{{ match.player1.user.username }}</span></td>
+            <td width="20%"><span class="btn btn-secondary">{{ match.player1 }}</span></td>
           <td width="15%"><span class="btn btn-secondary">{% if match.result1 != None and match.result2 != None and match.confirmed %}
                                                                 {{ match.result1 }} : {{ match.result2 }}
                                                           {% elif match.result1 != None and match.result2 != None and not match.confirmed %}
@@ -238,7 +238,7 @@
                                                           {% else %}
                                                                 Nie rozegrano
                                                           {% endif %}</span></td>
-          <td width="20%"><span class="btn btn-secondary">{{ match.player2.user.username }}</span></td>
+          <td width="20%"><span class="btn btn-secondary">{{ match.player2 }}</span></td>
           <td width="45%">
               {% if cup.author == request.user %}
                         {% if not match.finished or not match.confirmed %}
